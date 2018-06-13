@@ -94,22 +94,26 @@ func (vc *Virt6502) getIndirectJmpAddr() uint16 {
 }
 
 var opcodeNames = []string{
-	"BRK", "ORA", "XXX", "XXX", "XXX", "ORA", "ASL", "XXX", "PHP", "ORA", "ASL", "XXX", "XXX", "ORA", "ASL", "XXX",
-	"BPL", "ORA", "XXX", "XXX", "XXX", "ORA", "ASL", "XXX", "CLC", "ORA", "XXX", "XXX", "XXX", "ORA", "ASL", "XXX",
-	"JSR", "AND", "XXX", "XXX", "BIT", "AND", "ROL", "XXX", "PLP", "AND", "ROL", "XXX", "BIT", "AND", "ROL", "XXX",
-	"BMI", "AND", "XXX", "XXX", "XXX", "AND", "ROL", "XXX", "SEC", "AND", "XXX", "XXX", "XXX", "AND", "ROL", "XXX",
-	"RTI", "EOR", "XXX", "XXX", "XXX", "EOR", "LSR", "XXX", "PHA", "EOR", "LSR", "XXX", "JMP", "EOR", "LSR", "XXX",
-	"BVC", "EOR", "XXX", "XXX", "XXX", "EOR", "LSR", "XXX", "CLI", "EOR", "XXX", "XXX", "XXX", "EOR", "LSR", "XXX",
-	"RTS", "ADC", "XXX", "XXX", "XXX", "ADC", "ROR", "XXX", "PLA", "ADC", "ROR", "XXX", "JMP", "ADC", "ROR", "XXX",
-	"BVS", "ADC", "XXX", "XXX", "XXX", "ADC", "ROR", "XXX", "SEI", "ADC", "XXX", "XXX", "XXX", "ADC", "ROR", "XXX",
-	"XXX", "STA", "XXX", "XXX", "STY", "STA", "STX", "XXX", "DEY", "XXX", "TXA", "XXX", "STY", "STA", "STX", "XXX",
+
+	// LOWERCASE == undocumented
+
+	// 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
+	"BRK", "ORA", "XXX", "slo", "nop", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "XXX", "ORA", "ASL", "slo",
+	"BPL", "ORA", "XXX", "slo", "nop", "ORA", "ASL", "slo", "CLC", "ORA", "XXX", "slo", "XXX", "ORA", "ASL", "slo",
+	"JSR", "AND", "XXX", "XXX", "BIT", "AND", "ROL", "XXX", "PLP", "AND", "ROL", "aac", "BIT", "AND", "ROL", "XXX",
+	"BMI", "AND", "XXX", "XXX", "nop", "AND", "ROL", "XXX", "SEC", "AND", "XXX", "XXX", "XXX", "AND", "ROL", "XXX",
+	"RTI", "EOR", "XXX", "XXX", "nop", "EOR", "LSR", "XXX", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "XXX",
+	"BVC", "EOR", "XXX", "XXX", "nop", "EOR", "LSR", "XXX", "CLI", "EOR", "XXX", "XXX", "XXX", "EOR", "LSR", "XXX",
+	"RTS", "ADC", "XXX", "XXX", "nop", "ADC", "ROR", "XXX", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "XXX",
+	"BVS", "ADC", "XXX", "XXX", "nop", "ADC", "ROR", "XXX", "SEI", "ADC", "XXX", "XXX", "XXX", "ADC", "ROR", "XXX",
+	"nop", "STA", "nop", "XXX", "STY", "STA", "STX", "XXX", "DEY", "XXX", "TXA", "XXX", "STY", "STA", "STX", "XXX",
 	"BCC", "STA", "XXX", "XXX", "STY", "STA", "STX", "XXX", "TYA", "STA", "TXS", "XXX", "XXX", "STA", "XXX", "XXX",
 	"LDY", "LDA", "LDX", "XXX", "LDY", "LDA", "LDX", "XXX", "TAY", "LDA", "TAX", "XXX", "LDY", "LDA", "LDX", "XXX",
-	"BCS", "LDA", "XXX", "XXX", "LDY", "LDA", "LDX", "XXX", "CLV", "LDA", "TSX", "LAS", "LDY", "LDA", "LDX", "XXX",
-	"CPY", "CMP", "XXX", "XXX", "CPY", "CMP", "DEC", "XXX", "INY", "CMP", "DEX", "XXX", "CPY", "CMP", "DEC", "XXX",
-	"BNE", "CMP", "XXX", "XXX", "XXX", "CMP", "DEC", "XXX", "CLD", "CMP", "XXX", "XXX", "XXX", "CMP", "DEC", "XXX",
-	"CPX", "SBC", "XXX", "XXX", "CPX", "SBC", "INC", "XXX", "INX", "SBC", "NOP", "XXX", "CPX", "SBC", "INC", "XXX",
-	"BEQ", "SBC", "XXX", "XXX", "XXX", "SBC", "INC", "XXX", "SED", "SBC", "XXX", "XXX", "XXX", "SBC", "INC", "XXX",
+	"BCS", "LDA", "XXX", "XXX", "LDY", "LDA", "LDX", "XXX", "CLV", "LDA", "TSX", "las", "LDY", "LDA", "LDX", "XXX",
+	"CPY", "CMP", "nop", "XXX", "CPY", "CMP", "DEC", "XXX", "INY", "CMP", "DEX", "axs", "CPY", "CMP", "DEC", "XXX",
+	"BNE", "CMP", "XXX", "XXX", "nop", "CMP", "DEC", "XXX", "CLD", "CMP", "XXX", "XXX", "XXX", "CMP", "DEC", "XXX",
+	"CPX", "SBC", "nop", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "XXX", "CPX", "SBC", "INC", "isc",
+	"BEQ", "SBC", "XXX", "isc", "nop", "SBC", "INC", "isc", "SED", "SBC", "XXX", "isc", "XXX", "SBC", "INC", "isc",
 }
 
 func (vc *Virt6502) stepOpcode() {
@@ -148,6 +152,10 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(2, 2, &vc.A, vc.A|vc.Read(addr), vc.setZeroNeg)
 	case 0x0a: // ASL A
 		vc.opFn(2, 1, func() { vc.A = vc.aslAndSetFlags(vc.A) })
+	case 0x0b: // AAC imm (UNDOCUMENTED)
+		result := vc.Read(vc.PC+1) & vc.A
+		vc.setRegOp(2, 2, &vc.A, result, vc.setZeroNeg)
+		vc.setCarryFlag(result&0x80 != 0)
 	case 0x0c: // 3-nop (UNDOCUMENTED)
 		vc.opFn(4, 3, vc.undocumentedOpcode)
 	case 0x0d: // ORA absolute
@@ -240,6 +248,10 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(2, 2, &vc.A, vc.A&vc.Read(addr), vc.setZeroNeg)
 	case 0x2a: // ROL A
 		vc.opFn(2, 1, func() { vc.A = vc.rolAndSetFlags(vc.A) })
+	case 0x2b: // AAC imm (UNDOCUMENTED)
+		result := vc.Read(vc.PC+1) & vc.A
+		vc.setRegOp(2, 2, &vc.A, result, vc.setZeroNeg)
+		vc.setCarryFlag(result&0x80 != 0)
 	case 0x2c: // BIT absolute
 		addr := vc.getAbsoluteAddr()
 		vc.opFn(4, 3, func() { vc.bitAndSetFlags(vc.Read(addr)) })
@@ -302,6 +314,10 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(2, 2, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x4a: // LSR A
 		vc.opFn(2, 1, func() { vc.A = vc.lsrAndSetFlags(vc.A) })
+	case 0x4b: // ASR imm (UNDOCUMENTED)
+		addr := vc.PC + 1
+		vc.setRegOp(2, 2, &vc.A, vc.A&vc.Read(addr), vc.setZeroNeg)
+		vc.A = vc.lsrAndSetFlags(vc.A)
 	case 0x4c: // JMP absolute
 		vc.jmpOp(3, 3, vc.getAbsoluteAddr())
 	case 0x4d: // EOR absolute
@@ -361,6 +377,12 @@ func (vc *Virt6502) stepOpcode() {
 		vc.opFn(2, 2, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
 	case 0x6a: // ROR A
 		vc.opFn(2, 1, func() { vc.A = vc.rorAndSetFlags(vc.A) })
+	case 0x6b: // ARR imm (UNDOCUMENTED)
+		addr := vc.PC+1
+		vc.setRegOp(2, 2, &vc.A, vc.A&vc.Read(addr), vc.setZeroNeg)
+		vc.A = vc.rorAndSetFlags(vc.A)
+		vc.setCarryFlag(vc.A&0x40 != 0)
+		vc.setOverflowFlag(((vc.A<<1)^vc.A)&0x40 != 0)
 	case 0x6c: // JMP (indirect)
 		vc.jmpOp(5, 3, vc.getIndirectJmpAddr())
 	case 0x6d: // ADC absolute
@@ -544,6 +566,11 @@ func (vc *Virt6502) stepOpcode() {
 		vc.cmpOp(2, 2, vc.A, vc.Read(addr))
 	case 0xca: // DEX
 		vc.setRegOp(2, 1, &vc.X, vc.X-1, vc.setZeroNeg)
+	case 0xcb: // AXS (UNDOCUMENTED)
+		reg := vc.X & vc.A
+		val := vc.Read(vc.PC + 1)
+		vc.cmpOp(2, 2, reg, val)
+		vc.X = reg-val
 	case 0xcc: // CPY imm
 		addr := vc.getAbsoluteAddr()
 		vc.cmpOp(4, 3, vc.Y, vc.Read(addr))
@@ -592,6 +619,11 @@ func (vc *Virt6502) stepOpcode() {
 		vc.opFn(6, 2, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
 	case 0xe2: // 2-nop (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
+	case 0xe3: // ISC (indirect,x) (UNDOCUMENTED)
+		addr := vc.getXPreIndexedAddr()
+		val := vc.Read(addr)+1
+		vc.storeOp(8, 2, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xe5: // SBC zeropage
 		addr := vc.getZeroPageAddr()
 		vc.opFn(3, 2, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
@@ -601,6 +633,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xe6: // INC zeropage
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.Read(addr)+1, vc.setZeroNeg)
+	case 0xe7: // ISC zeropage (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		val := vc.Read(addr)+1
+		vc.storeOp(5, 2, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xe8: // INX
 		vc.setRegOp(2, 1, &vc.X, vc.X+1, vc.setZeroNeg)
 	case 0xe9: // SBC imm
@@ -608,7 +645,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.opFn(2, 2, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xea: // NOP
 		vc.opFn(2, 1, func() {})
-	case 0xeb: // sbc-alt imm (UNDOCUMENTED)
+	case 0xeb: // SBC imm (UNDOCUMENTED)
 		val := vc.Read(vc.PC + 1)
 		vc.opFn(2, 2, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xec: // CPX absolute
@@ -620,12 +657,22 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xee: // INC absolute
 		addr := vc.getAbsoluteAddr()
 		vc.storeOp(6, 3, addr, vc.Read(addr)+1, vc.setZeroNeg)
+	case 0xef: // ISC absolute (UNDOCUMENTED)
+		addr := vc.getAbsoluteAddr()
+		val := vc.Read(addr)+1
+		vc.storeOp(6, 3, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 
 	case 0xf0: // BEQ
 		vc.branchOpRel(vc.P&FlagZero == FlagZero)
 	case 0xf1: // SBC (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.opFn(5+cycles, 2, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
+	case 0xf3: // ISC (indirect),y (UNDOCUMENTED)
+		addr, _ := vc.getYPostIndexedAddr()
+		val := vc.Read(addr)+1
+		vc.storeOp(8, 2, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xf4: // 2-nop (UNDOCUMENTED)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0xf5: // SBC zeropage,x
@@ -634,6 +681,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xf6: // INC zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.Read(addr)+1, vc.setZeroNeg)
+	case 0xf7: // ISC zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		val := vc.Read(addr)+1
+		vc.storeOp(6, 2, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xf8: // SED
 		vc.opFn(2, 1, func() { vc.P |= FlagDecimal })
 	case 0xf9: // SBC absolute,y
@@ -641,6 +693,11 @@ func (vc *Virt6502) stepOpcode() {
 		vc.opFn(4+cycles, 3, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
 	case 0xfa: // 1-nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
+	case 0xfb: // ISC absolute,x (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
+		val := vc.Read(addr)+1
+		vc.storeOp(7, 3, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 	case 0xfc: // 3-nop (UNDOCUMENTED)
 		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
@@ -650,6 +707,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xfe: // INC absolute,x
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.storeOp(7, 3, addr, vc.Read(addr)+1, vc.setZeroNeg)
+	case 0xff: // ISC absolute,x (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
+		val := vc.Read(addr)+1
+		vc.storeOp(7, 3, addr, val, vc.setZeroNeg)
+		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
 
 	default:
 		vc.Err(fmt.Errorf("unimplemented opcode 0x%02x", opcode))
