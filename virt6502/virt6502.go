@@ -3,46 +3,49 @@ package virt6502
 import "fmt"
 
 const (
-	flagNeg         = 0x80
-	flagOverflow    = 0x40
-	flagOnStack     = 0x20
-	flagBrk         = 0x10
-	flagDecimal     = 0x08
-	flagIrqDisabled = 0x04
-	flagZero        = 0x02
-	flagCarry       = 0x01
+	FlagNeg         = 0x80
+	FlagOverflow    = 0x40
+	FlagOnStack     = 0x20
+	FlagBrk         = 0x10
+	FlagDecimal     = 0x08
+	FlagIrqDisabled = 0x04
+	FlagZero        = 0x02
+	FlagCarry       = 0x01
 )
 
 type Virt6502 struct {
 	PC            uint16
 	P, A, X, Y, S byte
 
+	// IgnoreDecimalMode allows you to force the 6502 to behave like the NES version.
+	IgnoreDecimalMode bool
+
 	IRQ, BRK, NMI, RESET bool
 	LastStepsP           byte
 
-	RunCycles func(uint)
-	Write     func(uint16, byte)
-	Read      func(uint16) byte
-	Err       func(error)
+	RunCycles func(uint) `json:"-"`
+	Write     func(uint16, byte) `json:"-"`
+	Read      func(uint16) byte `json:"-"`
+	Err       func(error) `json:"-"`
 
 	Steps uint64
 }
 
-func (vc *Virt6502) push16(val uint16) {
-	vc.push(byte(val >> 8))
-	vc.push(byte(val))
+func (vc *Virt6502) Push16(val uint16) {
+	vc.Push(byte(val >> 8))
+	vc.Push(byte(val))
 }
-func (vc *Virt6502) push(val byte) {
+func (vc *Virt6502) Push(val byte) {
 	vc.Write(0x100+uint16(vc.S), val)
 	vc.S--
 }
 
-func (vc *Virt6502) pop16() uint16 {
-	val := uint16(vc.pop())
-	val |= uint16(vc.pop()) << 8
+func (vc *Virt6502) Pop16() uint16 {
+	val := uint16(vc.Pop())
+	val |= uint16(vc.Pop()) << 8
 	return val
 }
-func (vc *Virt6502) pop() byte {
+func (vc *Virt6502) Pop() byte {
 	vc.S++
 	result := vc.Read(0x100 + uint16(vc.S))
 	return result
@@ -52,7 +55,7 @@ func (vc *Virt6502) pop() byte {
 // so we need the delay provided by having
 // a LastStepsP
 func (vc *Virt6502) interruptsEnabled() bool {
-	return vc.LastStepsP&flagIrqDisabled == 0
+	return vc.LastStepsP&FlagIrqDisabled == 0
 }
 
 func (vc *Virt6502) handleInterrupts() {
@@ -60,25 +63,25 @@ func (vc *Virt6502) handleInterrupts() {
 		vc.RESET = false
 		vc.PC = vc.Read16(0xfffc)
 		vc.S -= 3
-		vc.P |= flagIrqDisabled
+		vc.P |= FlagIrqDisabled
 	} else if vc.BRK {
 		vc.BRK = false
-		vc.push16(vc.PC + 1)
-		vc.push(vc.P | flagBrk | flagOnStack)
-		vc.P |= flagIrqDisabled
+		vc.Push16(vc.PC + 1)
+		vc.Push(vc.P | FlagBrk | FlagOnStack)
+		vc.P |= FlagIrqDisabled
 		vc.PC = vc.Read16(0xfffe)
 	} else if vc.NMI {
 		vc.NMI = false
-		vc.push16(vc.PC)
-		vc.push(vc.P | flagOnStack)
-		vc.P |= flagIrqDisabled
+		vc.Push16(vc.PC)
+		vc.Push(vc.P | FlagOnStack)
+		vc.P |= FlagIrqDisabled
 		vc.PC = vc.Read16(0xfffa)
 	} else if vc.IRQ {
 		vc.IRQ = false
 		if vc.interruptsEnabled() {
-			vc.push16(vc.PC)
-			vc.push(vc.P | flagOnStack)
-			vc.P |= flagIrqDisabled
+			vc.Push16(vc.PC)
+			vc.Push(vc.P | FlagOnStack)
+			vc.P |= FlagIrqDisabled
 			vc.PC = vc.Read16(0xfffe)
 		}
 	}
@@ -119,49 +122,30 @@ func (vc *Virt6502) DebugStatusLine() string {
 		fmt.Sprintf("S:%02x ", vc.S)
 }
 
+func (vc *Virt6502) setFlag(test bool, flag byte) {
+	if test {
+		vc.P |= flag
+	} else {
+		vc.P &^= flag
+	}
+}
+
 func (vc *Virt6502) setOverflowFlag(test bool) {
-	if test {
-		vc.P |= flagOverflow
-	} else {
-		vc.P &^= flagOverflow
-	}
+	vc.setFlag(test, FlagOverflow)
 }
-
 func (vc *Virt6502) setCarryFlag(test bool) {
-	if test {
-		vc.P |= flagCarry
-	} else {
-		vc.P &^= flagCarry
-	}
+	vc.setFlag(test, FlagCarry)
 }
-
 func (vc *Virt6502) setZeroFlag(test bool) {
-	if test {
-		vc.P |= flagZero
-	} else {
-		vc.P &^= flagZero
-	}
+	vc.setFlag(test, FlagZero)
 }
-
 func (vc *Virt6502) setNegFlag(test bool) {
-	if test {
-		vc.P |= flagNeg
-	} else {
-		vc.P &^= flagNeg
-	}
+	vc.setFlag(test, FlagNeg)
 }
 
 func (vc *Virt6502) setZeroNeg(val byte) {
-	if val == 0 {
-		vc.P |= flagZero
-	} else {
-		vc.P &^= flagZero
-	}
-	if val&0x80 == 0x80 {
-		vc.P |= flagNeg
-	} else {
-		vc.P &^= flagNeg
-	}
+	vc.setFlag(val == 0, FlagZero)
+	vc.setFlag(val&0x80 != 0, FlagNeg)
 }
 
 func (vc *Virt6502) setNoFlags(val byte) {}

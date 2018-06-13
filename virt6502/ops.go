@@ -142,7 +142,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(5, 2, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
 	case 0x08: // PHP
-		vc.opFn(3, 1, func() { vc.push(vc.P | flagOnStack | flagBrk) })
+		vc.opFn(3, 1, func() { vc.Push(vc.P | FlagOnStack | FlagBrk) })
 	case 0x09: // ORA imm
 		addr := vc.PC + 1
 		vc.setRegOp(2, 2, &vc.A, vc.A|vc.Read(addr), vc.setZeroNeg)
@@ -164,7 +164,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
 
 	case 0x10: // BPL
-		vc.branchOpRel(vc.P&flagNeg == 0)
+		vc.branchOpRel(vc.P&FlagNeg == 0)
 	case 0x11: // ORA (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.setRegOp(5+cycles, 2, &vc.A, vc.A|vc.Read(addr), vc.setZeroNeg)
@@ -189,7 +189,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 2, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
 	case 0x18: // CLC
-		vc.opFn(2, 1, func() { vc.P &^= flagCarry })
+		vc.opFn(2, 1, func() { vc.P &^= FlagCarry })
 	case 0x19: // ORA absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.A|vc.Read(addr), vc.setZeroNeg)
@@ -218,7 +218,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
 
 	case 0x20: // JSR (jump and store return addr)
-		vc.push16(vc.PC + 2)
+		vc.Push16(vc.PC + 2)
 		vc.jmpOp(6, 3, vc.getAbsoluteAddr())
 	case 0x21: // AND (indirect,x)
 		addr := vc.getXPreIndexedAddr()
@@ -233,7 +233,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.rolAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x28: // PLP
-		flags := vc.pop() &^ (flagBrk | flagOnStack)
+		flags := vc.Pop() &^ (FlagBrk | FlagOnStack)
 		vc.setRegOp(4, 1, &vc.P, flags, vc.setNoFlags)
 	case 0x29: // AND imm
 		addr := vc.PC + 1
@@ -251,7 +251,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 3, addr, vc.rolAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 
 	case 0x30: // BMI
-		vc.branchOpRel(vc.P&flagNeg == flagNeg)
+		vc.branchOpRel(vc.P&FlagNeg == FlagNeg)
 	case 0x31: // AND (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.setRegOp(5+cycles, 2, &vc.A, vc.A&vc.Read(addr), vc.setZeroNeg)
@@ -264,7 +264,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.rolAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x38: // SEC
-		vc.opFn(2, 1, func() { vc.P |= flagCarry })
+		vc.opFn(2, 1, func() { vc.P |= FlagCarry })
 	case 0x39: // AND absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.A&vc.Read(addr), vc.setZeroNeg)
@@ -281,9 +281,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(7, 3, addr, vc.rolAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 
 	case 0x40: // RTI (return from interrupt)
-		vc.P = vc.pop() &^ (flagBrk | flagOnStack)
+		vc.P = vc.Pop() &^ (FlagBrk | FlagOnStack)
 		vc.LastStepsP = vc.P                         // no lag from RTI
-		vc.opFn(6, 0, func() { vc.PC = vc.pop16() }) // real instLen 1, but we don't want to step past newPC (unlike RTS)
+		vc.opFn(6, 0, func() { vc.PC = vc.Pop16() }) // real instLen 1, but we don't want to step past newPC (unlike RTS)
 	case 0x41: // EOR (indirect,x)
 		addr := vc.getXPreIndexedAddr()
 		vc.setRegOp(6, 2, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
@@ -296,7 +296,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x48: // PHA
-		vc.opFn(3, 1, func() { vc.push(vc.A) })
+		vc.opFn(3, 1, func() { vc.Push(vc.A) })
 	case 0x49: // EOR imm
 		addr := vc.PC + 1
 		vc.setRegOp(2, 2, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
@@ -312,7 +312,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 
 	case 0x50: // BVC
-		vc.branchOpRel(vc.P&flagOverflow == 0)
+		vc.branchOpRel(vc.P&FlagOverflow == 0)
 	case 0x51: // EOR (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.setRegOp(5+cycles, 2, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
@@ -325,7 +325,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x58: // CLI
-		vc.opFn(2, 1, func() { vc.P &^= flagIrqDisabled })
+		vc.opFn(2, 1, func() { vc.P &^= FlagIrqDisabled })
 	case 0x59: // EOR absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
@@ -342,7 +342,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(7, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 
 	case 0x60: // RTS (return from subroutine)
-		vc.opFn(6, 1, func() { vc.PC = vc.pop16() }) // opFn adds 1 to PC, so does real 6502
+		vc.opFn(6, 1, func() { vc.PC = vc.Pop16() }) // opFn adds 1 to PC, so does real 6502
 	case 0x61: // ADC (indirect,x)
 		addr := vc.getXPreIndexedAddr()
 		vc.opFn(6, 2, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
@@ -355,7 +355,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x68: // PLA
-		vc.setRegOp(4, 1, &vc.A, vc.pop(), vc.setZeroNeg)
+		vc.setRegOp(4, 1, &vc.A, vc.Pop(), vc.setZeroNeg)
 	case 0x69: // ADC imm
 		addr := vc.PC + 1
 		vc.opFn(2, 2, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
@@ -371,7 +371,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 3, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 
 	case 0x70: // BVS
-		vc.branchOpRel(vc.P&flagOverflow == flagOverflow)
+		vc.branchOpRel(vc.P&FlagOverflow == FlagOverflow)
 	case 0x71: // ADC (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.opFn(5+cycles, 2, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
@@ -384,7 +384,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x78: // SEI
-		vc.opFn(2, 1, func() { vc.P |= flagIrqDisabled })
+		vc.opFn(2, 1, func() { vc.P |= FlagIrqDisabled })
 	case 0x79: // ADC absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.opFn(4+cycles, 3, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
@@ -426,7 +426,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(4, 3, vc.getAbsoluteAddr(), vc.X, vc.setNoFlags)
 
 	case 0x90: // BCC
-		vc.branchOpRel(vc.P&flagCarry == 0)
+		vc.branchOpRel(vc.P&FlagCarry == 0)
 	case 0x91: // STA (indirect),y
 		addr, _ := vc.getYPostIndexedAddr()
 		vc.storeOp(6, 2, addr, vc.A, vc.setNoFlags)
@@ -486,7 +486,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(4, 3, &vc.X, vc.Read(addr), vc.setZeroNeg)
 
 	case 0xb0: // BCS
-		vc.branchOpRel(vc.P&flagCarry == flagCarry)
+		vc.branchOpRel(vc.P&FlagCarry == FlagCarry)
 	case 0xb1: // LDA (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.setRegOp(5+cycles, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
@@ -500,7 +500,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getIndexedZeroPageAddr(vc.Y)
 		vc.setRegOp(4, 2, &vc.X, vc.Read(addr), vc.setZeroNeg)
 	case 0xb8: // CLV
-		vc.opFn(2, 1, func() { vc.P &^= flagOverflow })
+		vc.opFn(2, 1, func() { vc.P &^= FlagOverflow })
 	case 0xb9: // LDA absolute, y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.Read(addr), vc.setZeroNeg)
@@ -555,7 +555,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
 
 	case 0xd0: // BNE
-		vc.branchOpRel(vc.P&flagZero == 0)
+		vc.branchOpRel(vc.P&FlagZero == 0)
 	case 0xd1: // CMP (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.cmpOp(5+cycles, 2, vc.A, vc.Read(addr))
@@ -568,7 +568,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
 	case 0xd8: // CLD
-		vc.opFn(2, 1, func() { vc.P &^= flagDecimal })
+		vc.opFn(2, 1, func() { vc.P &^= FlagDecimal })
 	case 0xd9: // CMP absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.cmpOp(4+cycles, 3, vc.A, vc.Read(addr))
@@ -601,11 +601,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xe6: // INC zeropage
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.Read(addr)+1, vc.setZeroNeg)
+	case 0xe8: // INX
+		vc.setRegOp(2, 1, &vc.X, vc.X+1, vc.setZeroNeg)
 	case 0xe9: // SBC imm
 		val := vc.Read(vc.PC + 1)
 		vc.opFn(2, 2, func() { vc.A = vc.sbcAndSetFlags(val) })
-	case 0xe8: // INX
-		vc.setRegOp(2, 1, &vc.X, vc.X+1, vc.setZeroNeg)
 	case 0xea: // NOP
 		vc.opFn(2, 1, func() {})
 	case 0xeb: // sbc-alt imm (UNDOCUMENTED)
@@ -622,7 +622,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 3, addr, vc.Read(addr)+1, vc.setZeroNeg)
 
 	case 0xf0: // BEQ
-		vc.branchOpRel(vc.P&flagZero == flagZero)
+		vc.branchOpRel(vc.P&FlagZero == FlagZero)
 	case 0xf1: // SBC (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.opFn(5+cycles, 2, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
@@ -635,7 +635,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.Read(addr)+1, vc.setZeroNeg)
 	case 0xf8: // SED
-		vc.opFn(2, 1, func() { vc.P |= flagDecimal })
+		vc.opFn(2, 1, func() { vc.P |= FlagDecimal })
 	case 0xf9: // SBC absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.opFn(4+cycles, 3, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
@@ -663,14 +663,18 @@ func boolByte(b bool) byte {
 	return 0
 }
 
+func (vc *Virt6502) inDecimalMode() bool {
+	return !vc.IgnoreDecimalMode && vc.P&FlagDecimal == FlagDecimal
+}
+
 func (vc *Virt6502) adcAndSetFlags(val byte) byte {
 
-	carry := boolByte(vc.P&flagCarry == flagCarry)
+	carry := boolByte(vc.P&FlagCarry == FlagCarry)
 	n1A, n1Val := vc.A&0x0f, val&0x0f
 	n1Result := (n1A + n1Val + carry) & 0x0f
 
 	var halfCarry byte
-	if vc.P&flagDecimal == flagDecimal {
+	if vc.inDecimalMode() {
 		halfCarry = boolByte(n1A+n1Val+carry > 0x09)
 	} else {
 		halfCarry = (n1A + n1Val + carry) >> 4
@@ -680,7 +684,7 @@ func (vc *Virt6502) adcAndSetFlags(val byte) byte {
 	n2Result := (n2A + n2Val + halfCarry) & 0x0f
 
 	var carryOut byte
-	if vc.P&flagDecimal == flagDecimal {
+	if vc.inDecimalMode() {
 		carryOut = boolByte(n2A+n2Val+halfCarry > 0x09)
 	} else {
 		carryOut = (n2A + n2Val + halfCarry) >> 4
@@ -692,7 +696,7 @@ func (vc *Virt6502) adcAndSetFlags(val byte) byte {
 	n2ResultForV := (int8(n2A<<4) >> 4) + (int8(n2Val<<4) >> 4) + int8(halfCarry)
 	vc.setOverflowFlag(n2ResultForV < -8 || n2ResultForV > 7)
 
-	if vc.P&flagDecimal == flagDecimal {
+	if vc.inDecimalMode() {
 		if halfCarry == 1 {
 			n1Result = (n1Result + 0x06) & 0x0f
 		}
@@ -709,7 +713,7 @@ func (vc *Virt6502) adcAndSetFlags(val byte) byte {
 func (vc *Virt6502) sbcAndSetFlags(val byte) byte {
 
 	// NOTE: remember, carry is inverted for SBC
-	carry := boolByte(vc.P&flagCarry == 0)
+	carry := boolByte(vc.P&FlagCarry == 0)
 	n1A, n1Val := vc.A&0x0f, val&0x0f
 	n1Result := (n1A - n1Val - carry) & 0x0f
 
@@ -720,7 +724,7 @@ func (vc *Virt6502) sbcAndSetFlags(val byte) byte {
 	n2Result := (n2A - n2Val - halfCarry) & 0x0f
 
 	var carryOut byte
-	if vc.P&flagDecimal == flagDecimal {
+	if vc.inDecimalMode() {
 		carryOut = boolByte(n2A-n2Val-halfCarry > 0x09)
 	} else {
 		carryOut = (n2A - n2Val - halfCarry) >> 4
@@ -732,7 +736,7 @@ func (vc *Virt6502) sbcAndSetFlags(val byte) byte {
 	n2ResultForV := (int8(n2A<<4) >> 4) - (int8(n2Val<<4) >> 4) - int8(halfCarry)
 	vc.setOverflowFlag(n2ResultForV < -8 || n2ResultForV > 7)
 
-	if vc.P&flagDecimal == flagDecimal {
+	if vc.inDecimalMode() {
 		if halfCarry == 1 {
 			n1Result = (n1Result - 0x06) & 0x0f
 		}
@@ -762,7 +766,7 @@ func (vc *Virt6502) lsrAndSetFlags(val byte) byte {
 
 func (vc *Virt6502) rorAndSetFlags(val byte) byte {
 	result := val >> 1
-	if vc.P&flagCarry == flagCarry {
+	if vc.P&FlagCarry == FlagCarry {
 		result |= 0x80
 	}
 	vc.setCarryFlag(val&0x01 == 0x01)
@@ -772,7 +776,7 @@ func (vc *Virt6502) rorAndSetFlags(val byte) byte {
 
 func (vc *Virt6502) rolAndSetFlags(val byte) byte {
 	result := val << 1
-	if vc.P&flagCarry == flagCarry {
+	if vc.P&FlagCarry == FlagCarry {
 		result |= 0x01
 	}
 	vc.setCarryFlag(val&0x80 == 0x80)
