@@ -472,7 +472,7 @@ func (vc *Virt6502) stepOpcode() {
 		addr := vc.getAbsoluteAddr()
 		vc.storeOp(6, 3, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x6f: // RRA absolute (UNDOCUMENTED)
-		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
+		addr := vc.getAbsoluteAddr()
 		rotated := vc.rorAndSetFlags(vc.Read(addr))
 		vc.storeOp(6, 3, addr, rotated, vc.setNoFlags)
 		vc.A = vc.adcAndSetFlags(rotated)
