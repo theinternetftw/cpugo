@@ -589,6 +589,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xa2: // LDX imm
 		addr := vc.PC + 1
 		vc.setRegOp(2, 2, &vc.X, vc.Read(addr), vc.setZeroNeg)
+	case 0xa3: // LAX (indirect,x) (UNDOCUMENTED)
+		addr := vc.getXPreIndexedAddr()
+		vc.setRegOp(6, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
+		vc.X = vc.A
 	case 0xa4: // LDY zeropage
 		addr := vc.getZeroPageAddr()
 		vc.setRegOp(3, 2, &vc.Y, vc.Read(addr), vc.setZeroNeg)
@@ -598,6 +602,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xa6: // LDX zeropage
 		addr := vc.getZeroPageAddr()
 		vc.setRegOp(3, 2, &vc.X, vc.Read(addr), vc.setZeroNeg)
+	case 0xa7: // LAX (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		vc.setRegOp(3, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
+		vc.X = vc.A
 	case 0xa8: // TAY
 		vc.setRegOp(2, 1, &vc.Y, vc.A, vc.setZeroNeg)
 	case 0xa9: // LDA imm
@@ -605,7 +613,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(2, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
 	case 0xaa: // TAX
 		vc.setRegOp(2, 1, &vc.X, vc.A, vc.setZeroNeg)
-	case 0xab: // LXA (UNDOCUMENTED) (TODO: is this right just for NES, for other 6502s, or what?)
+	case 0xab: // LAX imm (UNDOCUMENTED) (TODO: Is this right? For NES? Some docs have different (weirder) ops for this byte...)
 		addr := vc.PC + 1
 		vc.setRegOp(2, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
 		vc.X = vc.A
@@ -618,12 +626,20 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xae: // LDX absolute
 		addr := vc.getAbsoluteAddr()
 		vc.setRegOp(4, 3, &vc.X, vc.Read(addr), vc.setZeroNeg)
+	case 0xaf: // LAX (UNDOCUMENTED)
+		addr := vc.getAbsoluteAddr()
+		vc.setRegOp(4, 3, &vc.A, vc.Read(addr), vc.setZeroNeg)
+		vc.X = vc.A
 
 	case 0xb0: // BCS
 		vc.branchOpRel(vc.P&FlagCarry == FlagCarry)
 	case 0xb1: // LDA (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.setRegOp(5+cycles, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
+	case 0xb3: // LAX (indirect),y (UNDOCUMENTED)
+		addr, cycles := vc.getYPostIndexedAddr()
+		vc.setRegOp(5+cycles, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
+		vc.X = vc.A
 	case 0xb4: // LDY zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.setRegOp(4, 2, &vc.Y, vc.Read(addr), vc.setZeroNeg)
@@ -633,6 +649,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xb6: // LDX zeropage,y
 		addr := vc.getIndexedZeroPageAddr(vc.Y)
 		vc.setRegOp(4, 2, &vc.X, vc.Read(addr), vc.setZeroNeg)
+	case 0xb7: // LAX zeropage,y (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.Y)
+		vc.setRegOp(4, 2, &vc.A, vc.Read(addr), vc.setZeroNeg)
+		vc.X = vc.A
 	case 0xb8: // CLV
 		vc.opFn(2, 1, func() { vc.P &^= FlagOverflow })
 	case 0xb9: // LDA absolute, y
@@ -653,6 +673,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xbe: // LDX absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.X, vc.Read(addr), vc.setZeroNeg)
+	case 0xbf: // LAX (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
+		vc.setRegOp(4+cycles, 3, &vc.A, vc.Read(addr), vc.setZeroNeg)
+		vc.X = vc.A
 
 	case 0xc0: // CPY imm
 		addr := vc.PC + 1
