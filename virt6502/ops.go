@@ -425,6 +425,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x61: // ADC (indirect,x)
 		addr := vc.getXPreIndexedAddr()
 		vc.opFn(6, 2, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
+	case 0x63: // RRA (indirect,x) (UNDOCUMENTED)
+		addr := vc.getXPreIndexedAddr()
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(8, 2, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 	case 0x64: // 2-nop (UNDOCUMENTED)
 		vc.opFn(3, 2, vc.undocumentedOpcode)
 	case 0x65: // ADC zeropage
@@ -433,6 +438,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x66: // ROR zeropage
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
+	case 0x67: // RRA zeropage (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(5, 2, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 	case 0x68: // PLA
 		vc.setRegOp(4, 1, &vc.A, vc.Pop(), vc.setZeroNeg)
 	case 0x69: // ADC imm
@@ -454,12 +464,22 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x6e: // ROR absolute
 		addr := vc.getAbsoluteAddr()
 		vc.storeOp(6, 3, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
+	case 0x6f: // RRA absolute (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(6, 3, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 
 	case 0x70: // BVS
 		vc.branchOpRel(vc.P&FlagOverflow == FlagOverflow)
 	case 0x71: // ADC (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.opFn(5+cycles, 2, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
+	case 0x73: // RRA (indirect),y (UNDOCUMENTED)
+		addr, _ := vc.getYPostIndexedAddr()
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(8, 2, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 	case 0x74: // 2-nop (UNDOCUMENTED)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0x75: // ADC zeropage,x
@@ -468,6 +488,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x76: // ROR zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
+	case 0x77: // RRA zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(6, 2, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 	case 0x78: // SEI
 		vc.opFn(2, 1, func() { vc.P |= FlagIrqDisabled })
 	case 0x79: // ADC absolute,y
@@ -475,6 +500,11 @@ func (vc *Virt6502) stepOpcode() {
 		vc.opFn(4+cycles, 3, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
 	case 0x7a: // 1-nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
+	case 0x7b: // RRA absolute,y (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(7, 3, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 	case 0x7c: // 3-nop (UNDOCUMENTED)
 		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
@@ -484,6 +514,11 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x7e: // ROR absolute,x
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.storeOp(7, 3, addr, vc.rorAndSetFlags(vc.Read(addr)), vc.setNoFlags)
+	case 0x7f: // RRA absolute,x (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
+		rotated := vc.rorAndSetFlags(vc.Read(addr))
+		vc.storeOp(7, 3, addr, rotated, vc.setNoFlags)
+		vc.A = vc.adcAndSetFlags(rotated)
 
 	case 0x80: // 2-nop (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
