@@ -526,12 +526,17 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 2, vc.getXPreIndexedAddr(), vc.A, vc.setNoFlags)
 	case 0x82: // 2-nop (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
+	case 0x83: // AXS (indirect,x) (UNDOCUMENTED)
+		addr := vc.getXPreIndexedAddr()
+		vc.storeOp(6, 2, addr, vc.X & vc.A, vc.setNoFlags)
 	case 0x84: // STY zeropage
 		vc.storeOp(3, 2, vc.getZeroPageAddr(), vc.Y, vc.setNoFlags)
 	case 0x85: // STA zeropage
 		vc.storeOp(3, 2, vc.getZeroPageAddr(), vc.A, vc.setNoFlags)
 	case 0x86: // STX zeropage
 		vc.storeOp(3, 2, vc.getZeroPageAddr(), vc.X, vc.setNoFlags)
+	case 0x87: // AXS zeropage (UNDOCUMENTED)
+		vc.storeOp(3, 2, vc.getZeroPageAddr(), vc.X & vc.A, vc.setNoFlags)
 	case 0x88: // DEY
 		vc.setRegOp(2, 1, &vc.Y, vc.Y-1, vc.setZeroNeg)
 	case 0x89: // 2-nop (UNDOCUMENTED)
@@ -544,6 +549,8 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(4, 3, vc.getAbsoluteAddr(), vc.A, vc.setNoFlags)
 	case 0x8e: // STX absolute
 		vc.storeOp(4, 3, vc.getAbsoluteAddr(), vc.X, vc.setNoFlags)
+	case 0x8f: // AXS absolute (UNDOCUMENTED)
+		vc.storeOp(4, 3, vc.getAbsoluteAddr(), vc.X & vc.A, vc.setNoFlags)
 
 	case 0x90: // BCC
 		vc.branchOpRel(vc.P&FlagCarry == 0)
@@ -559,6 +566,9 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x96: // STX zeropage,y
 		addr := vc.getIndexedZeroPageAddr(vc.Y)
 		vc.storeOp(4, 2, addr, vc.X, vc.setNoFlags)
+	case 0x97: // AXS zeropage,y (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.Y)
+		vc.storeOp(4, 2, addr, vc.X & vc.A, vc.setNoFlags)
 	case 0x98: // TYA
 		vc.setRegOp(2, 1, &vc.A, vc.Y, vc.setZeroNeg)
 	case 0x99: // STA absolute,y
@@ -668,7 +678,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.cmpOp(2, 2, vc.A, vc.Read(addr))
 	case 0xca: // DEX
 		vc.setRegOp(2, 1, &vc.X, vc.X-1, vc.setZeroNeg)
-	case 0xcb: // AXS (UNDOCUMENTED)
+	case 0xcb: // SAX (UNDOCUMENTED)
 		reg := vc.X & vc.A
 		val := vc.Read(vc.PC + 1)
 		vc.cmpOp(2, 2, reg, val)
