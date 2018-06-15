@@ -336,8 +336,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(6, 2, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x43: // SRE (indirect,x) (UNDOCUMENTED)
 		addr := vc.getXPreIndexedAddr()
-		vc.storeOp(8, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(8, 2, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x44: // 2-nop (UNDOCUMENTED)
 		vc.opFn(3, 2, vc.undocumentedOpcode)
 	case 0x45: // EOR zeropage
@@ -348,8 +349,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(5, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x47: // SRE zeropage (UNDOCUMENTED)
 		addr := vc.getZeroPageAddr()
-		vc.storeOp(5, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(5, 2, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x48: // PHA
 		vc.opFn(3, 1, func() { vc.Push(vc.A) })
 	case 0x49: // EOR imm
@@ -371,8 +373,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x4f: // SRE absolute (UNDOCUMENTED)
 		addr := vc.getAbsoluteAddr()
-		vc.storeOp(6, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(6, 3, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 
 	case 0x50: // BVC
 		vc.branchOpRel(vc.P&FlagOverflow == 0)
@@ -381,8 +384,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.setRegOp(5+cycles, 2, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x53: // SRE (indirect),y (UNDOCUMENTED)
 		addr, _ := vc.getYPostIndexedAddr()
-		vc.storeOp(8, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(8, 2, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x54: // 2-nop (UNDOCUMENTED)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0x55: // EOR zeropage,x
@@ -393,8 +397,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(6, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x57: // SRE zeropage,x (UNDOCUMENTED)
 		addr := vc.getIndexedZeroPageAddr(vc.X)
-		vc.storeOp(6, 2, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(6, 2, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x58: // CLI
 		vc.opFn(2, 1, func() { vc.P &^= FlagIrqDisabled })
 	case 0x59: // EOR absolute,y
@@ -404,8 +409,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0x5b: // SRE absolute,y (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
-		vc.storeOp(7, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(7, 3, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 	case 0x5c: // 3-nop (UNDOCUMENTED)
 		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
@@ -417,8 +423,9 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(7, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
 	case 0x5f: // SRE absolute,x (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
-		vc.storeOp(7, 3, addr, vc.lsrAndSetFlags(vc.Read(addr)), vc.setNoFlags)
-		vc.storeOp(0, 0, addr, vc.A^vc.Read(addr), vc.setNoFlags)
+		shifted := vc.lsrAndSetFlags(vc.Read(addr))
+		vc.storeOp(7, 3, addr, shifted, vc.setNoFlags)
+		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
 
 	case 0x60: // RTS (return from subroutine)
 		vc.opFn(6, 1, func() { vc.PC = vc.Pop16() }) // opFn adds 1 to PC, so does real 6502
