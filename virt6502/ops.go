@@ -686,6 +686,10 @@ func (vc *Virt6502) stepOpcode() {
 		vc.cmpOp(6, 2, vc.A, vc.Read(addr))
 	case 0xc2: // 2-nop (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
+	case 0xc3: // DCM (indirect,x) (UNDOCUMENTED)
+		addr := vc.getXPreIndexedAddr()
+		vc.storeOp(8, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 	case 0xc4: // CPY zeropage
 		addr := vc.getZeroPageAddr()
 		vc.cmpOp(3, 2, vc.Y, vc.Read(addr))
@@ -695,6 +699,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xc6: // DEC zeropage
 		addr := vc.getZeroPageAddr()
 		vc.storeOp(5, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
+	case 0xc7: // DCM zeropage (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		vc.storeOp(5, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 	case 0xc8: // INY
 		vc.setRegOp(2, 1, &vc.Y, vc.Y+1, vc.setZeroNeg)
 	case 0xc9: // CMP imm
@@ -716,12 +724,20 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xce: // DEC absolute
 		addr := vc.getAbsoluteAddr()
 		vc.storeOp(6, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
+	case 0xcf: // DCM absolute (UNDOCUMENTED)
+		addr := vc.getAbsoluteAddr()
+		vc.storeOp(6, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 
 	case 0xd0: // BNE
 		vc.branchOpRel(vc.P&FlagZero == 0)
 	case 0xd1: // CMP (indirect),y
 		addr, cycles := vc.getYPostIndexedAddr()
 		vc.cmpOp(5+cycles, 2, vc.A, vc.Read(addr))
+	case 0xd3: // DCM (indirect,x) (UNDOCUMENTED)
+		addr, _ := vc.getYPostIndexedAddr()
+		vc.storeOp(8, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 	case 0xd4: // 2-nop (UNDOCUMENTED)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0xd5: // CMP zeropage,x
@@ -730,6 +746,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xd6: // DEC zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(6, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
+	case 0xd7: // DCM zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		vc.storeOp(6, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 	case 0xd8: // CLD
 		vc.opFn(2, 1, func() { vc.P &^= FlagDecimal })
 	case 0xd9: // CMP absolute,y
@@ -737,6 +757,10 @@ func (vc *Virt6502) stepOpcode() {
 		vc.cmpOp(4+cycles, 3, vc.A, vc.Read(addr))
 	case 0xda: // 1-nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
+	case 0xdb: // DCM absolute,y (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
+		vc.storeOp(7, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 	case 0xdc: // 3-nop (UNDOCUMENTED)
 		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
@@ -746,6 +770,10 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xde: // DEC absolute,x
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.storeOp(7, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
+	case 0xdf: // DCM absolute,x (UNDOCUMENTED)
+		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
+		vc.storeOp(7, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
+		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
 
 	case 0xe0: // CPX imm
 		addr := vc.PC + 1
