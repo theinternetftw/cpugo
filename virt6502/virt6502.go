@@ -114,7 +114,7 @@ func (vc *Virt6502) DebugStatusLine() string {
 		fmt.Sprintf("PC:%04x ", vc.PC) +
 		//fmt.Sprintf("*PC[:3]:%02x%02x%02x ", opcode, b2, b3) +
 		//fmt.Sprintf("*S[:3]:%02x%02x%02x ", s1, s2, s3) +
-		fmt.Sprintf("opcode:%v ", opcodeNames[opcode]) +
+		fmt.Sprintf("opcode:%v/0x%02x ", opcodeNames[opcode], opcode) +
 		fmt.Sprintf("A:%02x ", vc.A) +
 		fmt.Sprintf("X:%02x ", vc.X) +
 		fmt.Sprintf("Y:%02x ", vc.Y) +
