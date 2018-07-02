@@ -98,22 +98,22 @@ var opcodeNames = []string{
 	// LOWERCASE == undocumented
 
 	// 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
-	"BRK", "ORA", "XXX", "slo", "nop", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "XXX", "ORA", "ASL", "slo",
-	"BPL", "ORA", "XXX", "slo", "nop", "ORA", "ASL", "slo", "CLC", "ORA", "XXX", "slo", "XXX", "ORA", "ASL", "slo",
+	"BRK", "ORA", "XXX", "slo", "skb", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "skw", "ORA", "ASL", "slo",
+	"BPL", "ORA", "XXX", "slo", "skb", "ORA", "ASL", "slo", "CLC", "ORA", "nop", "slo", "skw", "ORA", "ASL", "slo",
 	"JSR", "AND", "XXX", "rla", "BIT", "AND", "ROL", "rla", "PLP", "AND", "ROL", "aac", "BIT", "AND", "ROL", "rla",
-	"BMI", "AND", "XXX", "rla", "nop", "AND", "ROL", "rla", "SEC", "AND", "XXX", "rla", "XXX", "AND", "ROL", "rla",
-	"RTI", "EOR", "XXX", "sre", "nop", "EOR", "LSR", "sre", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "sre",
-	"BVC", "EOR", "XXX", "sre", "nop", "EOR", "LSR", "sre", "CLI", "EOR", "XXX", "sre", "XXX", "EOR", "LSR", "sre",
-	"RTS", "ADC", "XXX", "rra", "nop", "ADC", "ROR", "rra", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "rra",
-	"BVS", "ADC", "XXX", "rra", "nop", "ADC", "ROR", "rra", "SEI", "ADC", "XXX", "rra", "XXX", "ADC", "ROR", "rra",
-	"nop", "STA", "nop", "axs", "STY", "STA", "STX", "axs", "DEY", "XXX", "TXA", "XXX", "STY", "STA", "STX", "axs",
+	"BMI", "AND", "XXX", "rla", "skb", "AND", "ROL", "rla", "SEC", "AND", "nop", "rla", "skw", "AND", "ROL", "rla",
+	"RTI", "EOR", "XXX", "sre", "skb", "EOR", "LSR", "sre", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "sre",
+	"BVC", "EOR", "XXX", "sre", "skb", "EOR", "LSR", "sre", "CLI", "EOR", "nop", "sre", "skw", "EOR", "LSR", "sre",
+	"RTS", "ADC", "XXX", "rra", "skb", "ADC", "ROR", "rra", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "rra",
+	"BVS", "ADC", "XXX", "rra", "skb", "ADC", "ROR", "rra", "SEI", "ADC", "nop", "rra", "skw", "ADC", "ROR", "rra",
+	"skb", "STA", "skb", "axs", "STY", "STA", "STX", "axs", "DEY", "skb", "TXA", "XXX", "STY", "STA", "STX", "axs",
 	"BCC", "STA", "XXX", "XXX", "STY", "STA", "STX", "axs", "TYA", "STA", "TXS", "XXX", "XXX", "STA", "XXX", "XXX",
 	"LDY", "LDA", "LDX", "lax", "LDY", "LDA", "LDX", "lax", "TAY", "LDA", "TAX", "lax", "LDY", "LDA", "LDX", "lax",
 	"BCS", "LDA", "XXX", "lax", "LDY", "LDA", "LDX", "lax", "CLV", "LDA", "TSX", "las", "LDY", "LDA", "LDX", "lax",
-	"CPY", "CMP", "nop", "dcm", "CPY", "CMP", "DEC", "dcm", "INY", "CMP", "DEX", "sax", "CPY", "CMP", "DEC", "dcm",
-	"BNE", "CMP", "XXX", "dcm", "nop", "CMP", "DEC", "dcm", "CLD", "CMP", "XXX", "dcm", "XXX", "CMP", "DEC", "dcm",
-	"CPX", "SBC", "nop", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "XXX", "CPX", "SBC", "INC", "isc",
-	"BEQ", "SBC", "XXX", "isc", "nop", "SBC", "INC", "isc", "SED", "SBC", "XXX", "isc", "XXX", "SBC", "INC", "isc",
+	"CPY", "CMP", "skb", "dcm", "CPY", "CMP", "DEC", "dcm", "INY", "CMP", "DEX", "sax", "CPY", "CMP", "DEC", "dcm",
+	"BNE", "CMP", "XXX", "dcm", "skb", "CMP", "DEC", "dcm", "CLD", "CMP", "nop", "dcm", "skw", "CMP", "DEC", "dcm",
+	"CPX", "SBC", "skb", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "XXX", "CPX", "SBC", "INC", "isc",
+	"BEQ", "SBC", "XXX", "isc", "skb", "SBC", "INC", "isc", "SED", "SBC", "nop", "isc", "skw", "SBC", "INC", "isc",
 }
 
 func (vc *Virt6502) stepOpcode() {
@@ -131,7 +131,9 @@ func (vc *Virt6502) stepOpcode() {
 		shifted := vc.aslAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
-	case 0x04: // 2-nop (UNDOCUMENTED)
+	case 0x04: // skb zeropage (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		_ = vc.Read(addr)
 		vc.opFn(3, 2, vc.undocumentedOpcode)
 	case 0x05: // ORA zeropage
 		addr := vc.getZeroPageAddr()
@@ -156,7 +158,9 @@ func (vc *Virt6502) stepOpcode() {
 		result := vc.Read(vc.PC+1) & vc.A
 		vc.setRegOp(2, 2, &vc.A, result, vc.setZeroNeg)
 		vc.setCarryFlag(result&0x80 != 0)
-	case 0x0c: // 3-nop (UNDOCUMENTED)
+	case 0x0c: // skw absolute (UNDOCUMENTED)
+		addr := vc.getAbsoluteAddr()
+		_ = vc.Read(addr)
 		vc.opFn(4, 3, vc.undocumentedOpcode)
 	case 0x0d: // ORA absolute
 		addr := vc.getAbsoluteAddr()
@@ -182,7 +186,9 @@ func (vc *Virt6502) stepOpcode() {
 		shifted := vc.aslAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
-	case 0x14: // 2-nop (UNDOCUMENTED)
+	case 0x14: // skb zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0x15: // ORA zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
@@ -201,7 +207,7 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x19: // ORA absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.A|vc.Read(addr), vc.setZeroNeg)
-	case 0x1a: // 1-nop (UNDOCUMENTED)
+	case 0x1a: // nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0x1b: // SLO absolute,y (UNDOCUMENTED)
 		vc.undocumentedOpcode()
@@ -209,8 +215,9 @@ func (vc *Virt6502) stepOpcode() {
 		shifted := vc.aslAndSetFlags(vc.Read(addr))
 		vc.storeOp(7, 3, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A|shifted, vc.setZeroNeg)
-	case 0x1c: // 3-nop (UNDOCUMENTED)
-		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+	case 0x1c: // skw absolute,x (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
 	case 0x1d: // ORA absolute,x
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
@@ -287,7 +294,9 @@ func (vc *Virt6502) stepOpcode() {
 		rotated := vc.rolAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, rotated, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A&rotated, vc.setZeroNeg)
-	case 0x34: // 2-nop (UNDOCUMENTED)
+	case 0x34: // skb zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0x35: // AND zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
@@ -305,15 +314,16 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x39: // AND absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.A&vc.Read(addr), vc.setZeroNeg)
-	case 0x3a: // 1-nop (UNDOCUMENTED)
+	case 0x3a: // nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0x3b: // RLA absolute,y (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
 		rotated := vc.rolAndSetFlags(vc.Read(addr))
 		vc.storeOp(7, 3, addr, rotated, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A&rotated, vc.setZeroNeg)
-	case 0x3c: // 3-nop (UNDOCUMENTED)
-		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+	case 0x3c: // skw absolute,x (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
 	case 0x3d: // AND absolute,x
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
@@ -339,7 +349,9 @@ func (vc *Virt6502) stepOpcode() {
 		shifted := vc.lsrAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
-	case 0x44: // 2-nop (UNDOCUMENTED)
+	case 0x44: // skb zeropage (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		_ = vc.Read(addr)
 		vc.opFn(3, 2, vc.undocumentedOpcode)
 	case 0x45: // EOR zeropage
 		addr := vc.getZeroPageAddr()
@@ -387,7 +399,9 @@ func (vc *Virt6502) stepOpcode() {
 		shifted := vc.lsrAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
-	case 0x54: // 2-nop (UNDOCUMENTED)
+	case 0x54: // skb zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0x55: // EOR zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
@@ -405,15 +419,16 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x59: // EOR absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.setRegOp(4+cycles, 3, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
-	case 0x5a: // 1-nop (UNDOCUMENTED)
+	case 0x5a: // nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0x5b: // SRE absolute,y (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
 		shifted := vc.lsrAndSetFlags(vc.Read(addr))
 		vc.storeOp(7, 3, addr, shifted, vc.setNoFlags)
 		vc.setRegOp(0, 0, &vc.A, vc.A^vc.Read(addr), vc.setZeroNeg)
-	case 0x5c: // 3-nop (UNDOCUMENTED)
-		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+	case 0x5c: // skw absolute,x (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
 	case 0x5d: // EOR absolute,x
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
@@ -437,7 +452,9 @@ func (vc *Virt6502) stepOpcode() {
 		rotated := vc.rorAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, rotated, vc.setNoFlags)
 		vc.A = vc.adcAndSetFlags(rotated)
-	case 0x64: // 2-nop (UNDOCUMENTED)
+	case 0x64: // skb zeropage (UNDOCUMENTED)
+		addr := vc.getZeroPageAddr()
+		_ = vc.Read(addr)
 		vc.opFn(3, 2, vc.undocumentedOpcode)
 	case 0x65: // ADC zeropage
 		addr := vc.getZeroPageAddr()
@@ -487,7 +504,9 @@ func (vc *Virt6502) stepOpcode() {
 		rotated := vc.rorAndSetFlags(vc.Read(addr))
 		vc.storeOp(8, 2, addr, rotated, vc.setNoFlags)
 		vc.A = vc.adcAndSetFlags(rotated)
-	case 0x74: // 2-nop (UNDOCUMENTED)
+	case 0x74: // skb zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0x75: // ADC zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
@@ -505,15 +524,16 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x79: // ADC absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.opFn(4+cycles, 3, func() { vc.A = vc.adcAndSetFlags(vc.Read(addr)) })
-	case 0x7a: // 1-nop (UNDOCUMENTED)
+	case 0x7a: // nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0x7b: // RRA absolute,y (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
 		rotated := vc.rorAndSetFlags(vc.Read(addr))
 		vc.storeOp(7, 3, addr, rotated, vc.setNoFlags)
 		vc.A = vc.adcAndSetFlags(rotated)
-	case 0x7c: // 3-nop (UNDOCUMENTED)
-		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+	case 0x7c: // skw absolute,x (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
 	case 0x7d: // ADC absolute,x
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
@@ -527,11 +547,11 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(7, 3, addr, rotated, vc.setNoFlags)
 		vc.A = vc.adcAndSetFlags(rotated)
 
-	case 0x80: // 2-nop (UNDOCUMENTED)
+	case 0x80: // skb imm (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
 	case 0x81: // STA (indirect,x)
 		vc.storeOp(6, 2, vc.getXPreIndexedAddr(), vc.A, vc.setNoFlags)
-	case 0x82: // 2-nop (UNDOCUMENTED)
+	case 0x82: // skb imm (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
 	case 0x83: // AXS (indirect,x) (UNDOCUMENTED)
 		addr := vc.getXPreIndexedAddr()
@@ -546,7 +566,7 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(3, 2, vc.getZeroPageAddr(), vc.X & vc.A, vc.setNoFlags)
 	case 0x88: // DEY
 		vc.setRegOp(2, 1, &vc.Y, vc.Y-1, vc.setZeroNeg)
-	case 0x89: // 2-nop (UNDOCUMENTED)
+	case 0x89: // skb imm (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
 	case 0x8a: // TXA
 		vc.setRegOp(2, 1, &vc.A, vc.X, vc.setZeroNeg)
@@ -691,7 +711,7 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xc1: // CMP (indirect,x)
 		addr := vc.getXPreIndexedAddr()
 		vc.cmpOp(6, 2, vc.A, vc.Read(addr))
-	case 0xc2: // 2-nop (UNDOCUMENTED)
+	case 0xc2: // skb imm (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
 	case 0xc3: // DCM (indirect,x) (UNDOCUMENTED)
 		addr := vc.getXPreIndexedAddr()
@@ -745,7 +765,9 @@ func (vc *Virt6502) stepOpcode() {
 		addr, _ := vc.getYPostIndexedAddr()
 		vc.storeOp(8, 2, addr, vc.Read(addr)-1, vc.setZeroNeg)
 		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
-	case 0xd4: // 2-nop (UNDOCUMENTED)
+	case 0xd4: // skb zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0xd5: // CMP zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
@@ -762,14 +784,15 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xd9: // CMP absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.cmpOp(4+cycles, 3, vc.A, vc.Read(addr))
-	case 0xda: // 1-nop (UNDOCUMENTED)
+	case 0xda: // nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0xdb: // DCM absolute,y (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.storeOp(7, 3, addr, vc.Read(addr)-1, vc.setZeroNeg)
 		vc.cmpOp(0, 0, vc.A, vc.Read(addr))
-	case 0xdc: // 3-nop (UNDOCUMENTED)
-		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+	case 0xdc: // skw absolute,x (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
 	case 0xdd: // CMP absolute,x
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
@@ -788,7 +811,7 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xe1: // SBC (indirect,x)
 		addr := vc.getXPreIndexedAddr()
 		vc.opFn(6, 2, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
-	case 0xe2: // 2-nop (UNDOCUMENTED)
+	case 0xe2: // skb imm (UNDOCUMENTED)
 		vc.opFn(2, 2, vc.undocumentedOpcode)
 	case 0xe3: // ISC (indirect,x) (UNDOCUMENTED)
 		addr := vc.getXPreIndexedAddr()
@@ -844,7 +867,9 @@ func (vc *Virt6502) stepOpcode() {
 		val := vc.Read(addr)+1
 		vc.storeOp(8, 2, addr, val, vc.setZeroNeg)
 		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
-	case 0xf4: // 2-nop (UNDOCUMENTED)
+	case 0xf4: // skb zeropage,x (UNDOCUMENTED)
+		addr := vc.getIndexedZeroPageAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4, 2, vc.undocumentedOpcode)
 	case 0xf5: // SBC zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
@@ -862,15 +887,16 @@ func (vc *Virt6502) stepOpcode() {
 	case 0xf9: // SBC absolute,y
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.Y)
 		vc.opFn(4+cycles, 3, func() { vc.A = vc.sbcAndSetFlags(vc.Read(addr)) })
-	case 0xfa: // 1-nop (UNDOCUMENTED)
+	case 0xfa: // nop (UNDOCUMENTED)
 		vc.opFn(2, 1, vc.undocumentedOpcode)
 	case 0xfb: // ISC absolute,x (UNDOCUMENTED)
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.Y)
 		val := vc.Read(addr)+1
 		vc.storeOp(7, 3, addr, val, vc.setZeroNeg)
 		vc.opFn(0, 0, func() { vc.A = vc.sbcAndSetFlags(val) })
-	case 0xfc: // 3-nop (UNDOCUMENTED)
-		_, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+	case 0xfc: // skw absolute,x (UNDOCUMENTED)
+		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
+		_ = vc.Read(addr)
 		vc.opFn(4+cycles, 3, vc.undocumentedOpcode)
 	case 0xfd: // SBC absolute,x
 		addr, cycles := vc.getIndexedAbsoluteAddr(vc.X)
