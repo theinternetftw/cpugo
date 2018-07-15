@@ -584,6 +584,9 @@ func (vc *Virt6502) stepOpcode() {
 	case 0x91: // STA (indirect),y
 		addr, _ := vc.getYPostIndexedAddr()
 		vc.storeOp(6, 2, addr, vc.A, vc.setNoFlags)
+	// case 0x93:
+	// if you really want to implement this one, look at this:
+	// https://forums.nesdev.com/viewtopic.php?f=3&t=10698&start=15#p121151
 	case 0x94: // STY zeropage,x
 		addr := vc.getIndexedZeroPageAddr(vc.X)
 		vc.storeOp(4, 2, addr, vc.Y, vc.setNoFlags)
@@ -603,9 +606,21 @@ func (vc *Virt6502) stepOpcode() {
 		vc.storeOp(5, 3, addr, vc.A, vc.setNoFlags)
 	case 0x9a: // TXS
 		vc.setRegOp(2, 1, &vc.S, vc.X, vc.setNoFlags)
+	// case 0x9b:
+	// if you really want to implement this one, look at this:
+	// https://forums.nesdev.com/viewtopic.php?f=3&t=10698&start=15#p121151
+	// case 0x9c:
+	// if you really want to implement this one, look at this:
+	// https://forums.nesdev.com/viewtopic.php?f=3&t=10698&start=15#p121151
 	case 0x9d: // STA absolute,x
 		addr, _ := vc.getIndexedAbsoluteAddr(vc.X)
 		vc.storeOp(5, 3, addr, vc.A, vc.setNoFlags)
+	// case 0x9e:
+	// if you really want to implement this one, look at this:
+	// https://forums.nesdev.com/viewtopic.php?f=3&t=10698&start=15#p121151
+	// case 0x9f:
+	// if you really want to implement this one, look at this:
+	// https://forums.nesdev.com/viewtopic.php?f=3&t=10698&start=15#p121151
 
 	case 0xa0: // LDY imm
 		addr := vc.PC + 1
