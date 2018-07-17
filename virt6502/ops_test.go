@@ -5,28 +5,25 @@ import "testing"
 
 func fmtFlags(flags byte) string {
 	out := []byte{'_', '_', '_', '_', '_', '_', '_', '_'}
-	if flags&flagNeg != 0 {
+	if flags&FlagNeg != 0 {
 		out[0] = byte('N')
 	}
-	if flags&flagOverflow != 0 {
+	if flags&FlagOverflow != 0 {
 		out[1] = byte('V')
 	}
-	if flags&flagOnStack != 0 {
-		out[2] = byte('S')
-	}
-	if flags&flagBrk != 0 {
+	if flags&FlagBrk != 0 {
 		out[3] = byte('B')
 	}
-	if flags&flagDecimal != 0 {
+	if flags&FlagDecimal != 0 {
 		out[4] = byte('D')
 	}
-	if flags&flagIrqDisabled != 0 {
+	if flags&FlagIrqDisabled != 0 {
 		out[5] = byte('I')
 	}
-	if flags&flagZero != 0 {
+	if flags&FlagZero != 0 {
 		out[6] = byte('Z')
 	}
-	if flags&flagCarry != 0 {
+	if flags&FlagCarry != 0 {
 		out[7] = byte('C')
 	}
 	return fmt.Sprintf("0x%02x(%s)", flags, out)
@@ -45,7 +42,7 @@ func (a arithTest) String() string {
 		"0x%02x+0x%02x,C=%v==0x%02x,%s",
 		a.regA,
 		a.val,
-		a.regP&flagCarry == flagCarry,
+		a.regP&FlagCarry == FlagCarry,
 		a.result,
 		fmtFlags(a.resultRegP),
 	)
@@ -71,23 +68,23 @@ func (a arithTest) runTest(t *testing.T, fnToTest func(vc *Virt6502, val byte) b
 }
 
 func TestADCDecimalMode(t *testing.T) {
-	const c = flagCarry
+	const c = FlagCarry
 	adcTests := []arithTest{
-		{0x00, 0x00, 0, 0x00, flagZero},
-		{0x79, 0x00, c, 0x80, flagNeg | flagOverflow},
-		{0x24, 0x56, 0, 0x80, flagNeg | flagOverflow},
-		{0x93, 0x82, 0, 0x75, flagOverflow | flagCarry},
-		{0x89, 0x76, 0, 0x65, flagCarry},
-		{0x89, 0x76, c, 0x66, flagZero | flagCarry},
-		{0x80, 0xf0, 0, 0xd0, flagOverflow | flagCarry},
-		{0x80, 0xfa, 0, 0xe0, flagNeg | flagCarry},
+		{0x00, 0x00, 0, 0x00, FlagZero},
+		{0x79, 0x00, c, 0x80, FlagNeg | FlagOverflow},
+		{0x24, 0x56, 0, 0x80, FlagNeg | FlagOverflow},
+		{0x93, 0x82, 0, 0x75, FlagOverflow | FlagCarry},
+		{0x89, 0x76, 0, 0x65, FlagCarry},
+		{0x89, 0x76, c, 0x66, FlagZero | FlagCarry},
+		{0x80, 0xf0, 0, 0xd0, FlagOverflow | FlagCarry},
+		{0x80, 0xfa, 0, 0xe0, FlagNeg | FlagCarry},
 		{0x2f, 0x4f, 0, 0x74, 0},
 		{0x6f, 0x00, c, 0x76, 0},
 	}
 
 	for _, test := range adcTests {
-		test.regP |= flagDecimal
-		test.resultRegP |= flagDecimal
+		test.regP |= FlagDecimal
+		test.resultRegP |= FlagDecimal
 
 		test.runTest(t, func(vc *Virt6502, val byte) byte {
 			return vc.adcAndSetFlags(val)
@@ -96,20 +93,20 @@ func TestADCDecimalMode(t *testing.T) {
 }
 
 func TestSBCDecimalMode(t *testing.T) {
-	const c = flagCarry // NOTE: remember carry is inverted for sbc
+	const c = FlagCarry // NOTE: remember carry is inverted for sbc
 	sbcTests := []arithTest{
-		{0x00, 0x00, 0, 0x99, flagNeg},
-		{0x00, 0x00, c, 0x00, flagZero | flagCarry},
-		{0x00, 0x01, c, 0x99, flagNeg},
-		{0x0a, 0x00, c, 0x0a, flagCarry},
-		{0x0b, 0x00, 0, 0x0a, flagCarry},
-		{0x9a, 0x00, c, 0x9a, flagNeg | flagCarry},
-		{0x9b, 0x00, 0, 0x9a, flagNeg | flagCarry},
+		{0x00, 0x00, 0, 0x99, FlagNeg},
+		{0x00, 0x00, c, 0x00, FlagZero | FlagCarry},
+		{0x00, 0x01, c, 0x99, FlagNeg},
+		{0x0a, 0x00, c, 0x0a, FlagCarry},
+		{0x0b, 0x00, 0, 0x0a, FlagCarry},
+		{0x9a, 0x00, c, 0x9a, FlagNeg | FlagCarry},
+		{0x9b, 0x00, 0, 0x9a, FlagNeg | FlagCarry},
 	}
 
 	for _, test := range sbcTests {
-		test.regP |= flagDecimal
-		test.resultRegP |= flagDecimal
+		test.regP |= FlagDecimal
+		test.resultRegP |= FlagDecimal
 
 		test.runTest(t, func(vc *Virt6502, val byte) byte {
 			return vc.sbcAndSetFlags(val)
