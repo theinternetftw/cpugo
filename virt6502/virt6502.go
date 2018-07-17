@@ -5,7 +5,7 @@ import "fmt"
 const (
 	FlagNeg         = 0x80
 	FlagOverflow    = 0x40
-	FlagOnStack     = 0x20
+	FlagAlwaysSet   = 0x20
 	FlagBrk         = 0x10
 	FlagDecimal     = 0x08
 	FlagIrqDisabled = 0x04
@@ -61,28 +61,14 @@ func (vc *Virt6502) interruptsEnabled() bool {
 func (vc *Virt6502) handleInterrupts() {
 	if vc.RESET {
 		vc.RESET = false
-		vc.PC = vc.Read16(0xfffc)
-		vc.S -= 3
-		vc.P |= FlagIrqDisabled
-	} else if vc.BRK {
-		vc.BRK = false
-		vc.Push16(vc.PC + 1)
-		vc.Push(vc.P | FlagBrk | FlagOnStack)
-		vc.P |= FlagIrqDisabled
-		vc.PC = vc.Read16(0xfffe)
+		vc.doRESET()
 	} else if vc.NMI {
 		vc.NMI = false
-		vc.Push16(vc.PC)
-		vc.Push(vc.P | FlagOnStack)
-		vc.P |= FlagIrqDisabled
-		vc.PC = vc.Read16(0xfffa)
+		vc.doNMI()
 	} else if vc.IRQ {
 		vc.IRQ = false
 		if vc.interruptsEnabled() {
-			vc.Push16(vc.PC)
-			vc.Push(vc.P | FlagOnStack)
-			vc.P |= FlagIrqDisabled
-			vc.PC = vc.Read16(0xfffe)
+			vc.doIRQ()
 		}
 	}
 	vc.LastStepsP = vc.P
