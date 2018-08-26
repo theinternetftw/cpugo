@@ -2,8 +2,6 @@ package virt6502
 
 import "fmt"
 
-const crashOnUndocumentedOpcode = false
-
 // the "do" prefix means this includes runCycle()s
 
 func (vc *Virt6502) doReadCycle(addr uint16) byte {
@@ -299,39 +297,37 @@ func (vc *Virt6502) cmpOp(reg byte, val byte) {
 	vc.setCarryFlag(reg >= val)
 }
 
-var opcodeNames = []string{
+var opcodeNames = [256]string{
 
 	// LOWERCASE == undocumented
 
 	// 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
-	"BRK", "ORA", "XXX", "slo", "skb", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "skw", "ORA", "ASL", "slo",
-	"BPL", "ORA", "XXX", "slo", "skb", "ORA", "ASL", "slo", "CLC", "ORA", "nop", "slo", "skw", "ORA", "ASL", "slo",
-	"JSR", "AND", "XXX", "rla", "BIT", "AND", "ROL", "rla", "PLP", "AND", "ROL", "aac", "BIT", "AND", "ROL", "rla",
-	"BMI", "AND", "XXX", "rla", "skb", "AND", "ROL", "rla", "SEC", "AND", "nop", "rla", "skw", "AND", "ROL", "rla",
-	"RTI", "EOR", "XXX", "sre", "skb", "EOR", "LSR", "sre", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "sre",
-	"BVC", "EOR", "XXX", "sre", "skb", "EOR", "LSR", "sre", "CLI", "EOR", "nop", "sre", "skw", "EOR", "LSR", "sre",
-	"RTS", "ADC", "XXX", "rra", "skb", "ADC", "ROR", "rra", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "rra",
-	"BVS", "ADC", "XXX", "rra", "skb", "ADC", "ROR", "rra", "SEI", "ADC", "nop", "rra", "skw", "ADC", "ROR", "rra",
-	"skb", "STA", "skb", "axs", "STY", "STA", "STX", "axs", "DEY", "skb", "TXA", "XXX", "STY", "STA", "STX", "axs",
-	"BCC", "STA", "XXX", "XXX", "STY", "STA", "STX", "axs", "TYA", "STA", "TXS", "XXX", "XXX", "STA", "XXX", "XXX",
+	"BRK", "ORA", "xxx", "slo", "skb", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "skw", "ORA", "ASL", "slo",
+	"BPL", "ORA", "xxx", "slo", "skb", "ORA", "ASL", "slo", "CLC", "ORA", "nop", "slo", "skw", "ORA", "ASL", "slo",
+	"JSR", "AND", "xxx", "rla", "BIT", "AND", "ROL", "rla", "PLP", "AND", "ROL", "aac", "BIT", "AND", "ROL", "rla",
+	"BMI", "AND", "xxx", "rla", "skb", "AND", "ROL", "rla", "SEC", "AND", "nop", "rla", "skw", "AND", "ROL", "rla",
+	"RTI", "EOR", "xxx", "sre", "skb", "EOR", "LSR", "sre", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "sre",
+	"BVC", "EOR", "xxx", "sre", "skb", "EOR", "LSR", "sre", "CLI", "EOR", "nop", "sre", "skw", "EOR", "LSR", "sre",
+	"RTS", "ADC", "xxx", "rra", "skb", "ADC", "ROR", "rra", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "rra",
+	"BVS", "ADC", "xxx", "rra", "skb", "ADC", "ROR", "rra", "SEI", "ADC", "nop", "rra", "skw", "ADC", "ROR", "rra",
+	"skb", "STA", "skb", "axs", "STY", "STA", "STX", "axs", "DEY", "skb", "TXA", "xxx", "STY", "STA", "STX", "axs",
+	"BCC", "STA", "xxx", "xxx", "STY", "STA", "STX", "axs", "TYA", "STA", "TXS", "xxx", "xxx", "STA", "xxx", "xxx",
 	"LDY", "LDA", "LDX", "lax", "LDY", "LDA", "LDX", "lax", "TAY", "LDA", "TAX", "lax", "LDY", "LDA", "LDX", "lax",
-	"BCS", "LDA", "XXX", "lax", "LDY", "LDA", "LDX", "lax", "CLV", "LDA", "TSX", "las", "LDY", "LDA", "LDX", "lax",
+	"BCS", "LDA", "xxx", "lax", "LDY", "LDA", "LDX", "lax", "CLV", "LDA", "TSX", "las", "LDY", "LDA", "LDX", "lax",
 	"CPY", "CMP", "skb", "dcm", "CPY", "CMP", "DEC", "dcm", "INY", "CMP", "DEX", "sax", "CPY", "CMP", "DEC", "dcm",
-	"BNE", "CMP", "XXX", "dcm", "skb", "CMP", "DEC", "dcm", "CLD", "CMP", "nop", "dcm", "skw", "CMP", "DEC", "dcm",
-	"CPX", "SBC", "skb", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "XXX", "CPX", "SBC", "INC", "isc",
-	"BEQ", "SBC", "XXX", "isc", "skb", "SBC", "INC", "isc", "SED", "SBC", "nop", "isc", "skw", "SBC", "INC", "isc",
+	"BNE", "CMP", "xxx", "dcm", "skb", "CMP", "DEC", "dcm", "CLD", "CMP", "nop", "dcm", "skw", "CMP", "DEC", "dcm",
+	"CPX", "SBC", "skb", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "xxx", "CPX", "SBC", "INC", "isc",
+	"BEQ", "SBC", "xxx", "isc", "skb", "SBC", "INC", "isc", "SED", "SBC", "nop", "isc", "skw", "SBC", "INC", "isc",
+}
+
+func IsUndocumentedOpcode(opcode byte) bool {
+	// TODO: more systematic storage of undoc info
+	return opcodeNames[opcode][0] >= 'a'
 }
 
 func (vc *Virt6502) stepOpcode() {
 
 	opcode := vc.doPCFetchCycle()
-
-	if crashOnUndocumentedOpcode {
-		// TODO: systematic storage of this info
-		if opcodeNames[opcode][0] >= 'a' {
-			vc.Err(fmt.Errorf("Undocumented opcode 0x%02x at 0x%04x", vc.Read(vc.PC), vc.PC))
-		}
-	}
 
 	switch opcode {
 	case 0x00: // BRK
