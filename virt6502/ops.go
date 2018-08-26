@@ -19,6 +19,7 @@ func (vc *Virt6502) doWriteCycle(addr uint16, val byte) {
 
 func (vc *Virt6502) doPCFetchCycle() byte {
 	b := vc.doReadCycle(vc.PC)
+	vc.fetchBuf.push(b)
 	vc.PC++
 	return b
 }

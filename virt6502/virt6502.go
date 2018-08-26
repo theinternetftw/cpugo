@@ -29,7 +29,25 @@ type Virt6502 struct {
 	Err       func(error) `json:"-"`
 
 	Steps uint64
+
+	// for debug
+	fetchBuf fetchBuf
 }
+
+type fetchBuf struct {
+	buf [3]byte
+	len int
+}
+func (f fetchBuf) String() string {
+	return fmt.Sprintf("[%-6x]", f.buf[:f.len])
+}
+func (f *fetchBuf) push(b byte) {
+	if f.len < 3 {
+		f.buf[f.len] = b
+		f.len++
+	}
+}
+func (f *fetchBuf) clear() { f.len = 0 }
 
 func (vc *Virt6502) Push16(val uint16) {
 	vc.Push(byte(val >> 8))
@@ -77,6 +95,10 @@ func (vc *Virt6502) handleInterrupts() {
 func (vc *Virt6502) Step() {
 	vc.Steps++
 	vc.handleInterrupts()
+
+	// debug
+	vc.fetchBuf.clear()
+
 	vc.stepOpcode()
 }
 
@@ -92,15 +114,19 @@ func (vc *Virt6502) Write16(addr uint16, val uint16) {
 }
 
 func (vc *Virt6502) DebugStatusLine() string {
-	opcode := vc.Read(vc.PC)
+	opcodeName := "???"
+	if vc.fetchBuf.len != 0 {
+		opcodeName = opcodeNames[vc.fetchBuf.buf[0]]
+	}
 	//b2, b3 := vc.Read(vc.PC+1), vc.Read(vc.PC+2)
 	//sp := 0x100 + uint16(vc.S)
 	//s1, s2, s3 := vc.Read(sp), vc.Read(sp+1), vc.Read(sp+2)
-	return fmt.Sprintf("Steps: %09d ", vc.Steps) +
+	return fmt.Sprintf("Steps: %08d ", vc.Steps) +
 		fmt.Sprintf("PC:%04x ", vc.PC) +
+		fmt.Sprintf("Fetched:%v ", vc.fetchBuf) +
 		//fmt.Sprintf("*PC[:3]:%02x%02x%02x ", opcode, b2, b3) +
 		//fmt.Sprintf("*S[:3]:%02x%02x%02x ", s1, s2, s3) +
-		fmt.Sprintf("opcode:%v/0x%02x ", opcodeNames[opcode], opcode) +
+		fmt.Sprintf("opcode:%v ", opcodeName) +
 		fmt.Sprintf("A:%02x ", vc.A) +
 		fmt.Sprintf("X:%02x ", vc.X) +
 		fmt.Sprintf("Y:%02x ", vc.Y) +
