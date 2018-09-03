@@ -302,22 +302,22 @@ var opcodeNames = [256]string{
 	// LOWERCASE == undocumented
 
 	// 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
-	"BRK", "ORA", "xxx", "slo", "skb", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "skw", "ORA", "ASL", "slo",
-	"BPL", "ORA", "xxx", "slo", "skb", "ORA", "ASL", "slo", "CLC", "ORA", "nop", "slo", "skw", "ORA", "ASL", "slo",
-	"JSR", "AND", "xxx", "rla", "BIT", "AND", "ROL", "rla", "PLP", "AND", "ROL", "aac", "BIT", "AND", "ROL", "rla",
-	"BMI", "AND", "xxx", "rla", "skb", "AND", "ROL", "rla", "SEC", "AND", "nop", "rla", "skw", "AND", "ROL", "rla",
-	"RTI", "EOR", "xxx", "sre", "skb", "EOR", "LSR", "sre", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "sre",
-	"BVC", "EOR", "xxx", "sre", "skb", "EOR", "LSR", "sre", "CLI", "EOR", "nop", "sre", "skw", "EOR", "LSR", "sre",
-	"RTS", "ADC", "xxx", "rra", "skb", "ADC", "ROR", "rra", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "rra",
-	"BVS", "ADC", "xxx", "rra", "skb", "ADC", "ROR", "rra", "SEI", "ADC", "nop", "rra", "skw", "ADC", "ROR", "rra",
+	"BRK", "ORA", "kil", "slo", "skb", "ORA", "ASL", "slo", "PHP", "ORA", "ASL", "aac", "skw", "ORA", "ASL", "slo",
+	"BPL", "ORA", "kil", "slo", "skb", "ORA", "ASL", "slo", "CLC", "ORA", "nop", "slo", "skw", "ORA", "ASL", "slo",
+	"JSR", "AND", "kil", "rla", "BIT", "AND", "ROL", "rla", "PLP", "AND", "ROL", "aac", "BIT", "AND", "ROL", "rla",
+	"BMI", "AND", "kil", "rla", "skb", "AND", "ROL", "rla", "SEC", "AND", "nop", "rla", "skw", "AND", "ROL", "rla",
+	"RTI", "EOR", "kil", "sre", "skb", "EOR", "LSR", "sre", "PHA", "EOR", "LSR", "asr", "JMP", "EOR", "LSR", "sre",
+	"BVC", "EOR", "kil", "sre", "skb", "EOR", "LSR", "sre", "CLI", "EOR", "nop", "sre", "skw", "EOR", "LSR", "sre",
+	"RTS", "ADC", "kil", "rra", "skb", "ADC", "ROR", "rra", "PLA", "ADC", "ROR", "arr", "JMP", "ADC", "ROR", "rra",
+	"BVS", "ADC", "kil", "rra", "skb", "ADC", "ROR", "rra", "SEI", "ADC", "nop", "rra", "skw", "ADC", "ROR", "rra",
 	"skb", "STA", "skb", "axs", "STY", "STA", "STX", "axs", "DEY", "skb", "TXA", "xxx", "STY", "STA", "STX", "axs",
-	"BCC", "STA", "xxx", "xxx", "STY", "STA", "STX", "axs", "TYA", "STA", "TXS", "xxx", "xxx", "STA", "xxx", "xxx",
+	"BCC", "STA", "kil", "xxx", "STY", "STA", "STX", "axs", "TYA", "STA", "TXS", "xxx", "xxx", "STA", "xxx", "xxx",
 	"LDY", "LDA", "LDX", "lax", "LDY", "LDA", "LDX", "lax", "TAY", "LDA", "TAX", "lax", "LDY", "LDA", "LDX", "lax",
-	"BCS", "LDA", "xxx", "lax", "LDY", "LDA", "LDX", "lax", "CLV", "LDA", "TSX", "las", "LDY", "LDA", "LDX", "lax",
+	"BCS", "LDA", "kil", "lax", "LDY", "LDA", "LDX", "lax", "CLV", "LDA", "TSX", "las", "LDY", "LDA", "LDX", "lax",
 	"CPY", "CMP", "skb", "dcm", "CPY", "CMP", "DEC", "dcm", "INY", "CMP", "DEX", "sax", "CPY", "CMP", "DEC", "dcm",
-	"BNE", "CMP", "xxx", "dcm", "skb", "CMP", "DEC", "dcm", "CLD", "CMP", "nop", "dcm", "skw", "CMP", "DEC", "dcm",
-	"CPX", "SBC", "skb", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "xxx", "CPX", "SBC", "INC", "isc",
-	"BEQ", "SBC", "xxx", "isc", "skb", "SBC", "INC", "isc", "SED", "SBC", "nop", "isc", "skw", "SBC", "INC", "isc",
+	"BNE", "CMP", "kil", "dcm", "skb", "CMP", "DEC", "dcm", "CLD", "CMP", "nop", "dcm", "skw", "CMP", "DEC", "dcm",
+	"CPX", "SBC", "skb", "isc", "CPX", "SBC", "INC", "isc", "INX", "SBC", "NOP", "sbc", "CPX", "SBC", "INC", "isc",
+	"BEQ", "SBC", "kil", "isc", "skb", "SBC", "INC", "isc", "SED", "SBC", "nop", "isc", "skw", "SBC", "INC", "isc",
 }
 
 func IsUndocumentedOpcode(opcode byte) bool {
