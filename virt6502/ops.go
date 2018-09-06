@@ -119,6 +119,19 @@ func (vc *Virt6502) doIndexedAbsWrite(idx byte, val byte) {
 	vc.doWriteCycle(addr, val)
 }
 
+func (vc *Virt6502) doXIndexedAbsRead() byte {
+	return vc.doIndexedAbsRead(vc.X)
+}
+func (vc *Virt6502) doYIndexedAbsRead() byte {
+	return vc.doIndexedAbsRead(vc.Y)
+}
+func (vc *Virt6502) doXIndexedAbsWrite(val byte) {
+	vc.doIndexedAbsWrite(vc.X, val)
+}
+func (vc *Virt6502) doYIndexedAbsWrite(val byte) {
+	vc.doIndexedAbsWrite(vc.Y, val)
+}
+
 func (vc *Virt6502) doIndexedZeroPageAddrFetch(idx byte) uint16 {
 	base := vc.doPCFetchCycle()
 	_ = vc.doReadCycle(uint16(base))
@@ -135,6 +148,19 @@ func (vc *Virt6502) doIndexedZeroPageReadModWrite(idx byte, fn func(byte) byte) 
 func (vc *Virt6502) doIndexedZeroPageWrite(idx byte, val byte) {
 	addr := vc.doIndexedZeroPageAddrFetch(idx)
 	vc.doWriteCycle(addr, val)
+}
+
+func (vc *Virt6502) doXIndexedZeroPageRead() byte {
+	return vc.doIndexedZeroPageRead(vc.X)
+}
+func (vc *Virt6502) doYIndexedZeroPageRead() byte {
+	return vc.doIndexedZeroPageRead(vc.Y)
+}
+func (vc *Virt6502) doXIndexedZeroPageWrite(val byte) {
+	vc.doIndexedZeroPageWrite(vc.X, val)
+}
+func (vc *Virt6502) doYIndexedZeroPageWrite(val byte) {
+	vc.doIndexedZeroPageWrite(vc.Y, val)
 }
 
 func (vc *Virt6502) doXPreIndexedAddrFetch() uint16 {
@@ -365,7 +391,6 @@ func (vc *Virt6502) runUndocBlockOpcode(opcode byte) {
 		vc.doIndexedAbsReadModWrite(vc.Y, vc.rlaAndSetFlags)
 	case 0x3f: // rla absolute,x (UNDOCUMENTED)
 		vc.doIndexedAbsReadModWrite(vc.X, vc.rlaAndSetFlags)
-
 
 	case 0x43: // sre (indirect,x) (UNDOCUMENTED)
 		vc.doXPreIndexedReadModWrite(vc.sreAndSetFlags)
@@ -656,202 +681,65 @@ func (vc *Virt6502) runBlock2Opcode(opcode byte) {
 }
 
 func (vc *Virt6502) runBlock1Opcode(opcode byte) {
-	switch opcode {
 
-	case 0x01: // ORA (indirect,x)
-		val := vc.doXPreIndexedRead()
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x05: // ORA zeropage
-		val := vc.doZeroPageRead()
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x09: // ORA imm
-		val := vc.doPCFetchCycle()
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x0d: // ORA absolute
-		val := vc.doAbsRead()
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x11: // ORA (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x15: // ORA zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x19: // ORA absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
-	case 0x1d: // ORA absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.setRegOp(&vc.A, vc.A|val, vc.setZeroNeg)
+	var readFn func()byte
+	var writeFn func(byte)
 
-	case 0x21: // AND (indirect,x)
-		val := vc.doXPreIndexedRead()
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x25: // AND zeropage
-		val := vc.doZeroPageRead()
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x29: // AND imm
-		val := vc.doPCFetchCycle()
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x2d: // AND absolute
-		val := vc.doAbsRead()
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x31: // AND (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x35: // AND zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x39: // AND absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
-	case 0x3d: // AND absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.setRegOp(&vc.A, vc.A&val, vc.setZeroNeg)
+	switch (opcode >> 2) & 7 {
+	case 0: // (indirect, x)
+		readFn = vc.doXPreIndexedRead
+		writeFn = vc.doXPreIndexedWrite
+	case 1: // zp
+		readFn = vc.doZeroPageRead
+		writeFn = vc.doZeroPageWrite
+	case 2: // imm
+		readFn = vc.doPCFetchCycle
+		writeFn = func(byte) { vc.doPCFetchCycle() } // 0x89 skb imm (UNDOCUMENTED)
+	case 3: // abs
+		readFn = vc.doAbsRead
+		writeFn = vc.doAbsWrite
+	case 4: // (indirect), y
+		readFn = vc.doYPostIndexedRead
+		writeFn = vc.doYPostIndexedWrite
+	case 5: // zp, x
+		readFn = vc.doXIndexedZeroPageRead
+		writeFn = vc.doXIndexedZeroPageWrite
+	case 6: // abs, y
+		readFn = vc.doYIndexedAbsRead
+		writeFn = vc.doYIndexedAbsWrite
+	case 7: // abs, x
+		readFn = vc.doXIndexedAbsRead
+		writeFn = vc.doXIndexedAbsWrite
+	}
 
-	case 0x41: // EOR (indirect,x)
-		val := vc.doXPreIndexedRead()
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x45: // EOR zeropage
-		val := vc.doZeroPageRead()
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x49: // EOR imm
-		val := vc.doPCFetchCycle()
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x4d: // EOR absolute
-		val := vc.doAbsRead()
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x51: // EOR (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x55: // EOR zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x59: // EOR absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
-	case 0x5d: // EOR absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.setRegOp(&vc.A, vc.A^val, vc.setZeroNeg)
+	aluBits := opcode >> 5
 
-	case 0x61: // ADC (indirect,x)
-		val := vc.doXPreIndexedRead()
+	var val byte
+	if aluBits != 4 {
+		val = readFn()
+	}
+
+	switch aluBits {
+	case 0: // ORA
+		vc.A |= val
+		vc.setZeroNeg(vc.A)
+	case 1: // AND
+		vc.A &= val
+		vc.setZeroNeg(vc.A)
+	case 2: // EOR
+		vc.A ^= val
+		vc.setZeroNeg(vc.A)
+	case 3: // ADC
 		vc.A = vc.adcAndSetFlags(val)
-	case 0x65: // ADC zeropage
-		val := vc.doZeroPageRead()
-		vc.A = vc.adcAndSetFlags(val)
-	case 0x69: // ADC imm
-		val := vc.doPCFetchCycle()
-		vc.A = vc.adcAndSetFlags(val)
-	case 0x6d: // ADC absolute
-		val := vc.doAbsRead()
-		vc.A = vc.adcAndSetFlags(val)
-	case 0x71: // ADC (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.A = vc.adcAndSetFlags(val)
-	case 0x75: // ADC zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.A = vc.adcAndSetFlags(val)
-	case 0x79: // ADC absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.A = vc.adcAndSetFlags(val)
-	case 0x7d: // ADC absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.A = vc.adcAndSetFlags(val)
-
-	case 0x81: // STA (indirect,x)
-		vc.doXPreIndexedWrite(vc.A)
-	case 0x85: // STA zeropage
-		vc.doZeroPageWrite(vc.A)
-	case 0x89: // skb imm (UNDOCUMENTED)
-		_ = vc.doPCFetchCycle()
-	case 0x8d: // STA absolute
-		vc.doAbsWrite(vc.A)
-	case 0x91: // STA (indirect),y
-		vc.doYPostIndexedWrite(vc.A)
-	case 0x95: // STA zeropage,x
-		vc.doIndexedZeroPageWrite(vc.X, vc.A)
-	case 0x99: // STA absolute,y
-		vc.doIndexedAbsWrite(vc.Y, vc.A)
-	case 0x9d: // STA absolute,x
-		vc.doIndexedAbsWrite(vc.X, vc.A)
-
-	case 0xa1: // LDA (indirect,x)
-		val := vc.doXPreIndexedRead()
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xa5: // LDA zeropage
-		val := vc.doZeroPageRead()
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xa9: // LDA imm
-		val := vc.doPCFetchCycle()
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xad: // LDA absolute
-		val := vc.doAbsRead()
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xb1: // LDA (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xb5: // LDA zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xb9: // LDA absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-	case 0xbd: // LDA absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.setRegOp(&vc.A, val, vc.setZeroNeg)
-
-	case 0xc1: // CMP (indirect,x)
-		val := vc.doXPreIndexedRead()
+	case 4: // STA
+		writeFn(vc.A)
+	case 5: // LDA
+		vc.A = val
+		vc.setZeroNeg(vc.A)
+	case 6: // CMP
 		vc.cmpOp(vc.A, val)
-	case 0xc5: // CMP zeropage
-		val := vc.doZeroPageRead()
-		vc.cmpOp(vc.A, val)
-	case 0xc9: // CMP imm
-		val := vc.doPCFetchCycle()
-		vc.cmpOp(vc.A, val)
-	case 0xcd: // CMP absolute
-		val := vc.doAbsRead()
-		vc.cmpOp(vc.A, val)
-	case 0xd1: // CMP (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.cmpOp(vc.A, val)
-	case 0xd5: // CMP zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.cmpOp(vc.A, val)
-	case 0xd9: // CMP absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.cmpOp(vc.A, val)
-	case 0xdd: // CMP absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.cmpOp(vc.A, val)
-
-	case 0xe1: // SBC (indirect,x)
-		val := vc.doXPreIndexedRead()
+	case 7: // SBC
 		vc.A = vc.sbcAndSetFlags(val)
-	case 0xe5: // SBC zeropage
-		val := vc.doZeroPageRead()
-		vc.A = vc.sbcAndSetFlags(val)
-	case 0xe9: // SBC imm
-		val := vc.doPCFetchCycle()
-		vc.A = vc.sbcAndSetFlags(val)
-	case 0xed: // SBC absolute
-		val := vc.doAbsRead()
-		vc.A = vc.sbcAndSetFlags(val)
-	case 0xf1: // SBC (indirect),y
-		val := vc.doYPostIndexedRead()
-		vc.A = vc.sbcAndSetFlags(val)
-	case 0xf5: // SBC zeropage,x
-		val := vc.doIndexedZeroPageRead(vc.X)
-		vc.A = vc.sbcAndSetFlags(val)
-	case 0xf9: // SBC absolute,y
-		val := vc.doIndexedAbsRead(vc.Y)
-		vc.A = vc.sbcAndSetFlags(val)
-	case 0xfd: // SBC absolute,x
-		val := vc.doIndexedAbsRead(vc.X)
-		vc.A = vc.sbcAndSetFlags(val)
-
-	default:
-		vc.Err(fmt.Errorf("unimplemented opcode 0x%02x", opcode))
 	}
 }
 
@@ -866,7 +754,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 		vc.doPushOp(vc.P | FlagAlwaysSet | FlagBrk)
 	case 0x0c: // skw absolute (UNDOCUMENTED)
 		_ = vc.doAbsRead()
-
 	case 0x10: // BPL
 		vc.doBranchRel(vc.P&FlagNeg == 0)
 	case 0x14: // skb zeropage,x (UNDOCUMENTED)
@@ -887,7 +774,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 	case 0x2c: // BIT absolute
 		val := vc.doAbsRead()
 		vc.bitAndSetFlags(val)
-
 	case 0x30: // BMI
 		vc.doBranchRel(vc.P&FlagNeg == FlagNeg)
 	case 0x34: // skb zeropage,x (UNDOCUMENTED)
@@ -905,7 +791,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 		vc.doPushOp(vc.A)
 	case 0x4c: // JMP absolute
 		vc.PC = vc.doPCFetch16()
-
 	case 0x50: // BVC
 		vc.doBranchRel(vc.P&FlagOverflow == 0)
 	case 0x54: // skb zeropage,x (UNDOCUMENTED)
@@ -924,7 +809,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 		vc.setRegOp(&vc.A, result, vc.setZeroNeg)
 	case 0x6c: // JMP (indirect)
 		vc.PC = vc.doIndirectJmpAddrRead()
-
 	case 0x70: // BVS
 		vc.doBranchRel(vc.P&FlagOverflow == FlagOverflow)
 	case 0x74: // skb zeropage,x (UNDOCUMENTED)
@@ -942,7 +826,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 		vc.doNoMemOp(func() { vc.setRegOp(&vc.Y, vc.Y-1, vc.setZeroNeg) })
 	case 0x8c: // STY absolute
 		vc.doAbsWrite(vc.Y)
-
 	case 0x90: // BCC
 		vc.doBranchRel(vc.P&FlagCarry == 0)
 	case 0x94: // STY zeropage,x
@@ -964,7 +847,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 	case 0xac: // LDY absolute
 		val := vc.doAbsRead()
 		vc.setRegOp(&vc.Y, val, vc.setZeroNeg)
-
 	case 0xb0: // BCS
 		vc.doBranchRel(vc.P&FlagCarry == FlagCarry)
 	case 0xb4: // LDY zeropage,x
@@ -987,7 +869,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 	case 0xcc: // CPY absolute
 		val := vc.doAbsRead()
 		vc.cmpOp(vc.Y, val)
-
 	case 0xd0: // BNE
 		vc.doBranchRel(vc.P&FlagZero == 0)
 	case 0xd4: // skb zeropage,x (UNDOCUMENTED)
@@ -1008,7 +889,6 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 	case 0xec: // CPX absolute
 		val := vc.doAbsRead()
 		vc.cmpOp(vc.X, val)
-
 	case 0xf0: // BEQ
 		vc.doBranchRel(vc.P&FlagZero == FlagZero)
 	case 0xf4: // skb zeropage,x (UNDOCUMENTED)
