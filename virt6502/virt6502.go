@@ -78,7 +78,7 @@ func (vc *Virt6502) DoCustomIRQ(addr uint16) {
 // interrupt info lags behind actual P flag,
 // so we need the delay provided by having
 // a LastStepsP
-func (vc *Virt6502) interruptsEnabled() bool {
+func (vc *Virt6502) InterruptsEnabled() bool {
 	return vc.LastStepsP&FlagIrqDisabled == 0
 }
 
@@ -91,7 +91,7 @@ func (vc *Virt6502) HandleInterrupts() {
 		vc.doNMI()
 	} else if vc.IRQ {
 		vc.IRQ = false
-		if vc.interruptsEnabled() {
+		if vc.InterruptsEnabled() {
 			vc.doIRQ()
 		}
 	}
