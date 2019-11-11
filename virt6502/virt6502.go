@@ -102,9 +102,6 @@ func (vc *Virt6502) Step() {
 	vc.Steps++
 	vc.HandleInterrupts()
 
-	// debug
-	vc.fetchBuf.clear()
-
 	vc.StepOpcode()
 }
 

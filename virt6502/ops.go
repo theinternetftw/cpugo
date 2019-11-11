@@ -905,6 +905,9 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 
 func (vc *Virt6502) StepOpcode() {
 
+	// for debug
+	vc.fetchBuf.clear()
+
 	opcode := vc.doPCFetchCycle()
 	switch opcode&3 {
 	case 0:
