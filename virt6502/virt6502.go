@@ -69,6 +69,12 @@ func (vc *Virt6502) Pop() byte {
 	return result
 }
 
+func (vc *Virt6502) DoCustomIRQ(addr uint16) {
+	vc.doPCReadCycle()
+	vc.doPCReadCycle()
+	vc.doInterruptPushJmp(addr, vc.P | FlagAlwaysSet)
+}
+
 // interrupt info lags behind actual P flag,
 // so we need the delay provided by having
 // a LastStepsP
@@ -76,7 +82,7 @@ func (vc *Virt6502) interruptsEnabled() bool {
 	return vc.LastStepsP&FlagIrqDisabled == 0
 }
 
-func (vc *Virt6502) handleInterrupts() {
+func (vc *Virt6502) HandleInterrupts() {
 	if vc.RESET {
 		vc.RESET = false
 		vc.doRESET()
@@ -94,12 +100,12 @@ func (vc *Virt6502) handleInterrupts() {
 
 func (vc *Virt6502) Step() {
 	vc.Steps++
-	vc.handleInterrupts()
+	vc.HandleInterrupts()
 
 	// debug
 	vc.fetchBuf.clear()
 
-	vc.stepOpcode()
+	vc.StepOpcode()
 }
 
 func (vc *Virt6502) Read16(addr uint16) uint16 {

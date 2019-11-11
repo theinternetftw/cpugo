@@ -903,7 +903,7 @@ func (vc *Virt6502) runBlock0Opcode(opcode byte) {
 	}
 }
 
-func (vc *Virt6502) stepOpcode() {
+func (vc *Virt6502) StepOpcode() {
 
 	opcode := vc.doPCFetchCycle()
 	switch opcode&3 {
